@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulateur ATV320</title>
+    <style>
+        /* Styles pour reproduire l'aspect du variateur, optimisé pour mobile */
+        body {
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .variateur {
+            background-color: #2b2b2b;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            width: 300px;
+        }
+        .ecran {
+            background-color: #3b0000;
+            color: #ff0000;
+            font-family: 'Courier New', Courier, monospace; /* Imitation LED */
+            font-size: 40px;
+            text-align: right;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+            letter-spacing: 2px;
+        }
+        .controles {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        button {
+            background-color: #4a4a4a;
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 4px #1a1a1a;
+        }
+        button:active {
+            box-shadow: 0 0px #1a1a1a;
+            transform: translateY(4px);
+        }
+        .btn-esc { background-color: #8b0000; }
+        .btn-ent { background-color: #006400; }
+        .molette {
+            grid-column: span 2;
+            display: flex;
+            justify-content: space-between;
+        }
+        .molette button { width: 45%; }
+    </style>
+</head>
+<body>
+
+    <div class="variateur">
+        <div class="ecran" id="affichage">rdy</div>
+        
+        <div class="controles">
+            <button class="btn-esc" onclick="actionEsc()">ESC</button>
+            <button class="btn-ent" onclick="actionEnt()">ENT</button>
+            <div class="molette">
+                <button onclick="actionHaut()">▲</button>
+                <button onclick="actionBas()">▼</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. La base de données (L'arborescence du menu)
+        const menuATV320 = {
+            id: "ROOT", type: "menu", enfants: [
+                { id: "rEF-", type: "menu", enfants: [] },
+                { id: "COnF", type: "menu", enfants: [
+                    { id: "FULL", type: "menu", enfants: [
+                        { id: "ACC", type: "param", valeur: 3.0, pas: 0.1 },
+                        { id: "dEC", type: "param", valeur: 3.0, pas: 0.1 },
+                        { id: "LSP", type: "param", valeur: 0.0, pas: 0.1 },
+                        { id: "HSP", type: "param", valeur: 50.0, pas: 0.1 }
+                    ]}
+                ]}
+            ]
+        };
+
+        // 2. Les variables d'état (La mémoire du simulateur)
+        let cheminActuel = [menuATV320]; // Trace où on est dans les menus
+        let indexActuel = 0; // Position de la molette
+        let modeEdition = false; // Vrai si on est en train de modifier une valeur
+
+        // 3. Les fonctions de navigation
+        const ecran = document.getElementById("affichage");
+
+        function mettreAjourEcran() {
+            let noeudActuel = cheminActuel[cheminActuel.length - 1];
+            
+            if (modeEdition) {
+                // Affiche la valeur numérique avec 1 décimale
+                ecran.innerText = noeudActuel.enfants[indexActuel].valeur.toFixed(1);
+                ecran.style.color = "#00ff00"; // Clignotement simulé (couleur différente)
+            } else {
+                // Affiche le nom du menu ou du paramètre
+                if (noeudActuel.enfants.length > 0) {
+                    ecran.innerText = noeudActuel.enfants[indexActuel].id;
+                } else {
+                    ecran.innerText = "----"; 
+                }
+                ecran.style.color = "#ff0000";
+            }
+        }
+
+        function actionHaut() {
+            let noeudActuel = cheminActuel[cheminActuel.length - 1];
+            if (modeEdition) {
+                // Augmente la valeur du paramètre
+                noeudActuel.enfants[indexActuel].valeur += noeudActuel.enfants[indexActuel].pas;
+            } else {
+                // Fait défiler le menu vers le haut
+                if (indexActuel < noeudActuel.enfants.length - 1) indexActuel++;
+            }
+            mettreAjourEcran();
+        }
+
+        function actionBas() {
+            let noeudActuel = cheminActuel[cheminActuel.length - 1];
+            if (modeEdition) {
+                // Diminue la valeur du paramètre
+                noeudActuel.enfants[indexActuel].valeur -= noeudActuel.enfants[indexActuel].pas;
+            } else {
+                // Fait défiler le menu vers le bas
+                if (indexActuel > 0) indexActuel--;
+            }
+            mettreAjourEcran();
+        }
+
+        function actionEnt() {
+            let noeudActuel = cheminActuel[cheminActuel.length - 1];
+            let selection = noeudActuel.enfants[indexActuel];
+
+            if (modeEdition) {
+                // Valide et quitte le mode édition
+                modeEdition = false;
+            } else if (selection.type === "menu") {
+                // Entre dans le sous-menu
+                cheminActuel.push(selection);
+                indexActuel = 0;
+            } else if (selection.type === "param") {
+                // Entre en mode édition de valeur
+                modeEdition = true;
+            }
+            mettreAjourEcran();
+        }
+
+        function actionEsc() {
+            if (modeEdition) {
+                // Annule la modification (pour l'instant, on sort juste de l'édition)
+                modeEdition = false;
+            } else if (cheminActuel.length > 1) {
+                // Remonte d'un dossier dans le menu
+                cheminActuel.pop();
+                indexActuel = 0; // Remet à zéro pour simplifier
+            } else {
+                ecran.innerText = "rdy"; // Retour à l'écran de base
+                return;
+            }
+            mettreAjourEcran();
+        }
+
+        // Initialisation de l'affichage au démarrage
+        setTimeout(() => mettreAjourEcran(), 1500); // Laisse "rdy" affiché 1.5s
+    </script>
+</body>
+</html>
