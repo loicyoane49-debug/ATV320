@@ -5,146 +5,236 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Simulateur ATV320</title>
     <style>
-        /* Style responsive PC & Mobile */
+        /* Styles pour reproduire l'aspect du variateur, optimisé PC et mobile */
         body {
-            background-color: #1a1a1a;
-            color: #fff;
-            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            height: 100vh;
             margin: 0;
-            user-select: none; /* Empêche la sélection de texte au maintien */
+            font-family: Arial, sans-serif;
+            user-select: none; /* Empêche la sélection de texte lors des appuis longs */
+            -webkit-user-select: none;
         }
-        .facade-variateur {
+        .variateur {
             background-color: #2b2b2b;
-            border: 4px solid #444;
-            border-radius: 12px;
             padding: 20px;
-            width: 280px;
-            text-align: center;
+            border-radius: 10px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            width: 300px;
         }
-        .ecran-led {
-            background-color: #111;
-            color: #ff2a2a;
-            font-family: 'Courier New', monospace;
-            font-size: 2.2rem;
-            font-weight: bold;
+        .ecran {
+            background-color: #3b0000;
+            color: #ff0000;
+            font-family: 'Courier New', Courier, monospace; /* Imitation LED */
+            font-size: 40px;
+            text-align: right;
             padding: 15px;
-            border-radius: 6px;
-            border: 2px solid #333;
-            margin-bottom: 25px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
             letter-spacing: 2px;
-            min-height: 40px;
         }
+        /* Animation de clignotement pour la validation */
         .clignotement {
-            animation: blink 0.25s infinite alternate;
+            animation: clignoterLed 0.25s infinite alternate;
         }
-        @keyframes blink {
+        @keyframes clignoterLed {
             from { opacity: 1; }
-            to { opacity: 0; }
+            to { opacity: 0.1; }
         }
-        .pave-boutons {
+        .controles {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
         }
-        .btn-atv {
-            background-color: #3a3a3a;
-            color: #fff;
-            border: 2px solid #555;
+        button {
+            background-color: #4a4a4a;
+            color: white;
+            border: none;
             padding: 15px;
-            font-size: 1rem;
-            font-weight: bold;
-            border-radius: 8px;
+            font-size: 18px;
+            border-radius: 5px;
             cursor: pointer;
+            box-shadow: 0 4px #1a1a1a;
             touch-action: manipulation;
         }
-        .btn-atv:active {
-            background-color: #555;
-            transform: scale(0.96);
+        button:active {
+            box-shadow: 0 0px #1a1a1a;
+            transform: translateY(4px);
         }
+        .btn-esc { background-color: #8b0000; }
+        .btn-ent { background-color: #006400; }
+        .molette {
+            grid-column: span 2;
+            display: flex;
+            justify-content: space-between;
+        }
+        .molette button { width: 45%; }
     </style>
 </head>
 <body>
 
-<div class="facade-variateur">
-    <div id="affichage_led" class="ecran-led">rEF-</div>
-    
-    <div class="pave-boutons">
-        <button id="btn_esc" class="btn-atv">ESC</button>
-        <button id="btn_ent" class="btn-atv">ENT</button>
-        <button id="btn_haut" class="btn-atv">▲</button>
-        <button id="btn_bas" class="btn-atv">▼</button>
+    <div class="variateur">
+        <div class="ecran" id="affichage">rdy</div>
+        
+        <div class="controles">
+            <button class="btn-esc" onclick="actionEsc()">ESC</button>
+            <button class="btn-ent" onclick="actionEnt()">ENT</button>
+            <div class="molette">
+                <button id="btn-haut">▲</button>
+                <button id="btn-bas">▼</button>
+            </div>
+        </div>
     </div>
-</div>
 
-<script>
-    const ecran = document.getElementById('affichage_led');
-    let valeurFrequence = 50.0;
-    let modeEdition = false;
+    <script>
+        // 1. La base de données (L'arborescence du menu)
+        const menuATV320 = {
+            id: "ROOT", type: "menu", enfants: [
+                { id: "rEF-", type: "menu", enfants: [] },
+                { id: "COnF", type: "menu", enfants: [
+                    { id: "FULL", type: "menu", enfants: [
+                        { id: "ACC", type: "param", valeur: 3.0, pas: 0.1 },
+                        { id: "dEC", type: "param", valeur: 3.0, pas: 0.1 },
+                        { id: "LSP", type: "param", valeur: 0.0, pas: 0.1 },
+                        { id: "HSP", type: "param", valeur: 50.0, pas: 0.1 }
+                    ]}
+                ]}
+            ]
+        };
 
-    // 1. Gestion du clignotement à la validation (ENT)
-    function validerSaisie(callback) {
-        ecran.classList.add('clignotement');
-        setTimeout(() => {
-            ecran.classList.remove('clignotement');
-            if (callback) callback();
-        }, 1200);
-    }
+        // 2. Les variables d'état (La mémoire du simulateur)
+        let cheminActuel = [menuATV320]; 
+        let indexActuel = 0; 
+        let modeEdition = false; 
+        let enValidation = false; // Verrouille les entrées pendant le clignotement
 
-    document.getElementById('btn_ent').addEventListener('click', () => {
-        validerSaisie(() => {
-            modeEdition = !modeEdition;
-            ecran.innerText = modeEdition ? valeurFrequence.toFixed(1) : "rEF-";
+        const ecran = document.getElementById("affichage");
+
+        // 3. Affichage
+        function mettreAjourEcran() {
+            let noeudActuel = cheminActuel[cheminActuel.length - 1];
+            
+            if (modeEdition) {
+                ecran.innerText = noeudActuel.enfants[indexActuel].valeur.toFixed(1);
+                ecran.style.color = "#00ff00"; // Vert en mode édition
+            } else {
+                if (noeudActuel.enfants.length > 0) {
+                    ecran.innerText = noeudActuel.enfants[indexActuel].id;
+                } else {
+                    ecran.innerText = "----"; 
+                }
+                ecran.style.color = "#ff0000"; // Rouge en navigation
+            }
+        }
+
+        // 4. Logique des boutons
+        function actionHaut() {
+            if (enValidation) return;
+            let noeudActuel = cheminActuel[cheminActuel.length - 1];
+            if (modeEdition) {
+                let param = noeudActuel.enfants[indexActuel];
+                param.valeur = parseFloat((param.valeur + param.pas).toFixed(1));
+            } else {
+                if (indexActuel < noeudActuel.enfants.length - 1) indexActuel++;
+            }
+            mettreAjourEcran();
+        }
+
+        function actionBas() {
+            if (enValidation) return;
+            let noeudActuel = cheminActuel[cheminActuel.length - 1];
+            if (modeEdition) {
+                let param = noeudActuel.enfants[indexActuel];
+                if (param.valeur - param.pas >= 0) {
+                    param.valeur = parseFloat((param.valeur - param.pas).toFixed(1));
+                }
+            } else {
+                if (indexActuel > 0) indexActuel--;
+            }
+            mettreAjourEcran();
+        }
+
+        function actionEnt() {
+            if (enValidation) return;
+            let noeudActuel = cheminActuel[cheminActuel.length - 1];
+            let selection = noeudActuel.enfants[indexActuel];
+
+            if (modeEdition) {
+                // Validation avec clignotement
+                enValidation = true;
+                ecran.classList.add("clignotement");
+
+                setTimeout(() => {
+                    ecran.classList.remove("clignotement");
+                    modeEdition = false;
+                    enValidation = false;
+                    mettreAjourEcran();
+                }, 1200); // 1.2s de clignotement
+
+            } else if (selection.type === "menu") {
+                cheminActuel.push(selection);
+                indexActuel = 0;
+                mettreAjourEcran();
+            } else if (selection.type === "param") {
+                modeEdition = true;
+                mettreAjourEcran();
+            }
+        }
+
+        function actionEsc() {
+            if (enValidation) return;
+            if (modeEdition) {
+                modeEdition = false;
+            } else if (cheminActuel.length > 1) {
+                cheminActuel.pop();
+                indexActuel = 0;
+            } else {
+                ecran.innerText = "rdy";
+                return;
+            }
+            mettreAjourEcran();
+        }
+
+        // 5. Appui long & Défilement rapide (PC et Mobile)
+        function configurerAppuiLong(elementId, action) {
+            const btn = document.getElementById(elementId);
+            let timerInitial, intervalRapide;
+
+            const demarrer = (e) => {
+                if (e.cancelable) e.preventDefault();
+                action();
+                
+                // Maintien > 400ms déclenche le défilement toutes les 100ms
+                timerInitial = setTimeout(() => {
+                    intervalRapide = setInterval(action, 100);
+                }, 400);
+            };
+
+            const arreter = () => {
+                clearTimeout(timerInitial);
+                clearInterval(intervalRapide);
+            };
+
+            // Événements Tactiles
+            btn.addEventListener('touchstart', demarrer, { passive: false });
+            btn.addEventListener('touchend', arreter);
+            btn.addEventListener('touchcancel', arreter);
+
+            // Événements Souris PC
+            btn.addEventListener('mousedown', demarrer);
+            btn.addEventListener('mouseup', arreter);
+            btn.addEventListener('mouseleave', arreter);
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            configurerAppuiLong('btn-haut', actionHaut);
+            configurerAppuiLong('btn-bas', actionBas);
+            setTimeout(() => mettreAjourEcran(), 1500);
         });
-    });
-
-    // 2. Gestion hybride (PC/Mobile) pour l'appui long
-    function attacherAppuiLong(element, action) {
-        let timerInitial, intervalRapide;
-
-        const demarrer = (e) => {
-            if (e.cancelable) e.preventDefault();
-            action();
-            timerInitial = setTimeout(() => {
-                intervalRapide = setInterval(action, 100);
-            }, 400);
-        };
-
-        const arreter = () => {
-            clearTimeout(timerInitial);
-            clearInterval(intervalRapide);
-        };
-
-        // Événements Tactiles
-        element.addEventListener('touchstart', demarrer, { passive: false });
-        element.addEventListener('touchend', arreter);
-        element.addEventListener('touchcancel', arreter);
-
-        // Événements Souris PC
-        element.addEventListener('mousedown', demarrer);
-        element.addEventListener('mouseup', arreter);
-        element.addEventListener('mouseleave', arreter);
-    }
-
-    // Incrémentation / Décrémentation
-    attacherAppuiLong(document.getElementById('btn_haut'), () => {
-        if (valeurFrequence < 500.0) {
-            valeurFrequence = parseFloat((valeurFrequence + 0.1).toFixed(1));
-            ecran.innerText = valeurFrequence.toFixed(1);
-        }
-    });
-
-    attacherAppuiLong(document.getElementById('btn_bas'), () => {
-        if (valeurFrequence > 0.0) {
-            valeurFrequence = parseFloat((valeurFrequence - 0.1).toFixed(1));
-            ecran.innerText = valeurFrequence.toFixed(1);
-        }
-    });
-</script>
-
+    </script>
 </body>
 </html>
