@@ -160,14 +160,23 @@
         </div>
 
         <div class="carte">
-            <h3>Évaluation Procédurale TP</h3>
+            <h3>Évaluation Procédural TP</h3>
             <div class="champs-etudiant">
                 <input type="text" id="nom-etudiant" class="input-etudiant" placeholder="Nom">
                 <input type="text" id="prenom-etudiant" class="input-etudiant" placeholder="Prénom">
             </div>
 
             <select id="select-tp" class="select-tp" onchange="changerTP()">
-                <option value="tp1">TP 1 : Mise en Service Complète ATV320</option>
+                <option value="tp1">TP 1 : Vérification Réglages d'Usine</option>
+                <option value="tp2">TP 2 : Plaque Signalétique Moteur (drC-)</option>
+                <option value="tp3">TP 3 : Auto-réglage Moteur (tUn)</option>
+                <option value="tp4">TP 4 : Ajustement des Rampes (ACC / dEC)</option>
+                <option value="tp5">TP 5 : Encadrement Fréquence (LSP / HSP)</option>
+                <option value="tp6">TP 6 : Sélection du Canal de Commande (Cd1)</option>
+                <option value="tp7">TP 7 : Vitesse Présélectionnée SP2</option>
+                <option value="tp8">TP 8 : Combinatoire SP2 & SP3 (DI3/DI4)</option>
+                <option value="tp9">TP 9 : Profil Dynamique et Rampes Rapides</option>
+                <option value="tp10">TP 10 : Mise en Service Industrielle Globale</option>
             </select>
 
             <div class="consigne-box" id="consigne-tp"></div>
@@ -214,9 +223,54 @@
 
     const banquesTP = {
         tp1: { 
-            titre: "TP 1 : Procédure de Mise en Service Complète", 
-            consignes: "1. Renseigner Plaque Moteur : UnS = <strong>400 V</strong>, nCr = <strong>4.2 A</strong><br>2. Exécuter l'Auto-réglage : tUn = <strong>YES</strong> (attendre 'dOn')<br>3. Configurer Commande Bornier : Cd1 = <strong>tEr</strong><br>4. Lancer le moteur via DI1.", 
-            attentes: { UnS: 400.0, nCr: 4.2, tUn: "dOn", Cd1: "tEr" } 
+            titre: "TP 1 : Vérification des paramètres d'usine", 
+            consignes: "1. Vérifier que la fréquence standard est <strong>bFr = 50.0 Hz</strong>.<br>2. Vérifier que la fréquence maximale est <strong>HSP = 50.0 Hz</strong> dans FUn-.", 
+            attentes: { bFr: 50.0, HSP: 50.0 } 
+        },
+        tp2: { 
+            titre: "TP 2 : Plaque Signalétique Moteur (drC-)", 
+            consignes: "Saisir les caractéristiques nominales du moteur :<br>- Tension <strong>UnS = 400.0 V</strong><br>- Courant <strong>nCr = 4.2 A</strong><br>- Vitesse nominale <strong>nSP = 1440 RPM</strong>", 
+            attentes: { UnS: 400.0, nCr: 4.2, nSP: 1440 } 
+        },
+        tp3: { 
+            titre: "TP 3 : Auto-réglage du Moteur (tUn)", 
+            consignes: "1. Configurer la plaque moteur (UnS = 400.0 V, nCr = 4.2 A).<br>2. Lancer l'auto-tuning en passant <strong>tUn = YES</strong> (attendre la validation <strong>dOn</strong>).", 
+            attentes: { UnS: 400.0, nCr: 4.2, tUn: "dOn" } 
+        },
+        tp4: { 
+            titre: "TP 4 : Ajustement des Rampes (ACC / dEC)", 
+            consignes: "Accéder au menu FUn- et adapter la dynamique de démarrage :<br>- Temps d'accélération : <strong>ACC = 5.0 s</strong><br>- Temps de décélération : <strong>dEC = 8.0 s</strong>", 
+            attentes: { ACC: 5.0, dEC: 8.0 } 
+        },
+        tp5: { 
+            titre: "TP 5 : Encadrement Fréquence (LSP / HSP)", 
+            consignes: "Limiter la plage de fonctionnement pour la sécurité du procédé :<br>- Petite vitesse : <strong>LSP = 10.0 Hz</strong><br>- Grande vitesse : <strong>HSP = 45.0 Hz</strong>", 
+            attentes: { LSP: 10.0, HSP: 45.0 } 
+        },
+        tp6: { 
+            titre: "TP 6 : Sélection du Canal de Commande (Cd1)", 
+            consignes: "Basculer la commande du variateur depuis le bornier physique vers l'IHM façade :<br>Modifier <strong>Cd1 = HMI</strong> (Menu CtL-).", 
+            attentes: { Cd1: "HMI" } 
+        },
+        tp7: { 
+            titre: "TP 7 : Vitesse Présélectionnée SP2", 
+            consignes: "Dans FUn- > PSS- :<br>1. Régler la deuxième vitesse <strong>SP2 = 20.0 Hz</strong>.<br>2. Activer l'entrée <strong>DI3</strong> pour vérifier l'ordre de vitesse.", 
+            attentes: { SP2: 20.0 } 
+        },
+        tp8: { 
+            titre: "TP 8 : Combinatoire SP2 & SP3 (DI3/DI4)", 
+            consignes: "Dans FUn- > PSS- :<br>1. Configurer <strong>SP2 = 15.0 Hz</strong>.<br>2. Configurer <strong>SP3 = 30.0 Hz</strong>.<br>3. Vérifier les états logiques DI3 seul, DI4 seul et DI3+DI4.", 
+            attentes: { SP2: 15.0, SP3: 30.0 } 
+        },
+        tp9: { 
+            titre: "TP 9 : Profil Dynamique et Rampes Rapides", 
+            consignes: "Ajuster le variateur pour un convoyeur rapide :<br>- Rampes : <strong>ACC = 1.5 s</strong>, <strong>dEC = 2.0 s</strong><br>- Plage : <strong>LSP = 12.0 Hz</strong>, <strong>HSP = 50.0 Hz</strong>", 
+            attentes: { ACC: 1.5, dEC: 2.0, LSP: 12.0, HSP: 50.0 } 
+        },
+        tp10: { 
+            titre: "TP 10 : Mise en Service Industrielle Globale", 
+            consignes: "Réaliser la mise en service complète de l'installation :<br>1. Plaque moteur : <strong>UnS = 400.0 V</strong>, <strong>nCr = 4.2 A</strong><br>2. Auto-tuning : <strong>tUn = dOn</strong><br>3. Rampes : <strong>ACC = 4.0 s</strong>, <strong>dEC = 4.0 s</strong><br>4. Seuil mini : <strong>LSP = 5.0 Hz</strong>, <strong>SP2 = 25.0 Hz</strong><br>5. Commande : <strong>Cd1 = tEr</strong>", 
+            attentes: { UnS: 400.0, nCr: 4.2, tUn: "dOn", ACC: 4.0, dEC: 4.0, LSP: 5.0, SP2: 25.0, Cd1: "tEr" } 
         }
     };
 
@@ -544,10 +598,14 @@
         ctx.stroke();
     }
 
-    // 6. Gestion TP & Évaluation
+    // 6. Gestion TP & Évaluation Dynamique
     function changerTP() {
-        const tp = banquesTP["tp1"];
-        document.getElementById("consigne-tp").innerHTML = `<strong>${tp.titre}</strong><br>${tp.consignes}`;
+        const selectedKey = document.getElementById("select-tp").value;
+        const tp = banquesTP[selectedKey];
+        if (tp) {
+            document.getElementById("consigne-tp").innerHTML = `<strong>${tp.titre}</strong><br>${tp.consignes}`;
+            document.getElementById("resultat-tp").style.display = "none";
+        }
     }
 
     function evaluerTP() {
@@ -555,7 +613,8 @@
         const prenom = document.getElementById("prenom-etudiant").value.trim();
         if (!nom || !prenom) { alert("Saisissez le nom et prénom de l'étudiant."); return; }
 
-        const tp = banquesTP["tp1"];
+        const selectedKey = document.getElementById("select-tp").value;
+        const tp = banquesTP[selectedKey];
         let points = 0, total = Object.keys(tp.attentes).length, details = [];
 
         for (let param in tp.attentes) {
