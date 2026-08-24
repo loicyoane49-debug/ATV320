@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Simulateur ATV320 - Plateforme Complète</title>
+    <title>Simulateur ATV320 - Plateforme d'Évaluation</title>
     <style>
         body {
             background-color: #1e1e24;
@@ -25,11 +25,11 @@
             flex-wrap: wrap;
             gap: 20px;
             justify-content: center;
-            max-width: 1100px;
+            max-width: 1150px;
             width: 100%;
         }
 
-        /* --- 1. VARIATEUR ATV320 --- */
+        /* VARIATEUR ATV320 */
         .variateur {
             background-color: #2b2b2b;
             padding: 20px;
@@ -90,7 +90,7 @@
         }
         .molette button { width: 48%; }
 
-        /* --- 2. BORNIER DE COMMANDE (DI1 / DI2) --- */
+        /* BORNIER DE COMMANDE */
         .bornier {
             margin-top: 15px;
             background: #202020;
@@ -113,12 +113,12 @@
         }
         .switch-btn.active { background: #007bff; }
 
-        /* --- 3. MOTEUR ET RENDU DYNAMIQUE --- */
+        /* MOTEUR VIRTUEL */
         .panneau-moteur {
             background-color: #2b2b2b;
             padding: 20px;
             border-radius: 12px;
-            width: 280px;
+            width: 260px;
             border: 2px solid #444;
             display: flex;
             flex-direction: column;
@@ -126,14 +126,11 @@
             justify-content: space-between;
         }
         .moteur-svg {
-            width: 140px;
-            height: 140px;
+            width: 130px;
+            height: 130px;
             margin: 15px 0;
         }
-        .rotor {
-            transform-origin: center;
-            transition: transform 0.1s linear;
-        }
+        .rotor { transform-origin: center; }
         .jauge-frequence {
             width: 100%;
             background: #111;
@@ -144,12 +141,12 @@
         }
         .valeur-frequence { font-size: 22px; color: #00ffcc; font-family: monospace; font-weight: bold; }
 
-        /* --- 4. PANNEAU FORMATEUR & TP --- */
+        /* MODULE TP & FORMATEUR */
         .panneau-droite {
             display: flex;
             flex-direction: column;
             gap: 15px;
-            width: 320px;
+            width: 380px;
         }
         .carte {
             background: #2b2b2b;
@@ -159,12 +156,45 @@
         }
         .carte h3 { margin-top: 0; font-size: 16px; color: #00ffcc; border-bottom: 1px solid #444; padding-bottom: 8px; }
         
-        /* TP Evaluation */
+        .champs-etudiant {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .input-etudiant {
+            background: #111;
+            border: 1px solid #555;
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 13px;
+        }
+
+        .select-tp {
+            width: 100%;
+            background: #111;
+            color: #00ffcc;
+            border: 1px solid #555;
+            padding: 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
         .consigne-box { background: #1a1a1a; padding: 10px; border-radius: 6px; font-size: 13px; margin-bottom: 10px; line-height: 1.4; }
-        .btn-eval { background: #28a745; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        
+        .groupe-boutons-eval {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-eval { background: #28a745; color: white; border: none; padding: 10px; flex: 1; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-export { background: #007bff; color: white; border: none; padding: 10px; flex: 1; border-radius: 6px; font-weight: bold; cursor: pointer; display: none; }
+
         .resultat-eval { margin-top: 10px; font-size: 13px; padding: 8px; border-radius: 4px; display: none; }
 
-        /* Panneau Pannes */
         .grid-defauts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .btn-defaut { background: #dc3545; color: white; border: none; padding: 8px; font-size: 12px; border-radius: 4px; cursor: pointer; }
         .btn-reset { background: #17a2b8; color: white; border: none; padding: 8px; font-size: 12px; border-radius: 4px; cursor: pointer; grid-column: span 2; }
@@ -176,7 +206,7 @@
 
 <div class="plateforme">
 
-    <!-- BLOC 1 : VARIATEUR DE VITESSE & BORNIER -->
+    <!-- BLOC 1 : VARIATEUR ATV320 -->
     <div class="variateur">
         <div class="ecran" id="affichage">rdY</div>
         
@@ -189,7 +219,6 @@
             </div>
         </div>
 
-        <!-- Bornier Virtuel -->
         <div class="bornier">
             <div class="bornier-title">Bornier de Commande Virtuel</div>
             <div class="interrupteurs">
@@ -205,15 +234,13 @@
         </div>
     </div>
 
-    <!-- BLOC 2 : MOTEUR VIRTUEL ANIMÉ -->
+    <!-- BLOC 2 : MOTEUR VIRTUEL -->
     <div class="panneau-moteur">
         <h3 style="margin: 0; font-size: 16px;">Moteur Asynchrone</h3>
         
         <svg class="moteur-svg" viewBox="0 0 100 100">
-            <!-- Stator -->
             <circle cx="50" cy="50" r="45" fill="#3a3a3a" stroke="#666" stroke-width="4"/>
             <circle cx="50" cy="50" r="32" fill="#1a1a1a" stroke="#444" stroke-width="2"/>
-            <!-- Rotor -->
             <g id="rotor" class="rotor">
                 <circle cx="50" cy="50" r="22" fill="#007bff"/>
                 <line x1="50" y1="28" x2="50" y2="72" stroke="#fff" stroke-width="3"/>
@@ -227,26 +254,39 @@
         </div>
     </div>
 
-    <!-- BLOC 3 : CAHIER DES CHARGES (TP) ET DEFFAUTS -->
+    <!-- BLOC 3 : MULTI-SCÉNARIOS & RAPPORTS -->
     <div class="panneau-droite">
         
-        <!-- Module d'Évaluation TP -->
         <div class="carte">
-            <h3>TP 1 : Configurer le Moteur</h3>
-            <div class="consigne-box">
-                <strong>Cahier des charges :</strong><br>
-                1. Tension nominale (<code>UnS</code>) : <strong>380 V</strong><br>
-                2. Courant nominal (<code>nCr</code>) : <strong>5.5 A</strong><br>
-                3. Temps d'accélération (<code>ACC</code>) : <strong>5.0 s</strong><br>
-                4. Grande Vitesse (<code>HSP</code>) : <strong>60.0 Hz</strong>
+            <h3>Évaluation & Rapport de TP</h3>
+            
+            <div class="champs-etudiant">
+                <input type="text" id="nom-etudiant" class="input-etudiant" placeholder="Nom de l'étudiant">
+                <input type="text" id="prenom-etudiant" class="input-etudiant" placeholder="Prénom">
             </div>
-            <button class="btn-eval" onclick="evaluerTP()">Évaluer le Paramétrage</button>
+
+            <!-- Étape 3 : Banque de Scénarios -->
+            <select id="select-tp" class="select-tp" onchange="changerTP()">
+                <option value="tp1">TP 1 : Plaque Signalétique Moteur</option>
+                <option value="tp2">TP 2 : Configuration des Rampes</option>
+                <option value="tp3">TP 3 : Limitation de Vitesse (LSP/HSP)</option>
+            </select>
+
+            <div class="consigne-box" id="consigne-tp">
+                <!-- Chargé dynamiquement via JS -->
+            </div>
+
+            <div class="groupe-boutons-eval">
+                <button class="btn-eval" onclick="evaluerTP()">Valider</button>
+                <!-- Étape 2 : Exportation Word -->
+                <button class="btn-export" id="btn-export" onclick="exporterRapportWord()">Exporter (.doc)</button>
+            </div>
+
             <div id="resultat-tp" class="resultat-eval"></div>
         </div>
 
-        <!-- Simulation de Pannes -->
         <div class="carte">
-            <h3>Pannes & Diagnostics</h3>
+            <h3>Injecteur de Pannes</h3>
             <div class="grid-defauts">
                 <button class="btn-defaut" onclick="declencherDefaut('OHF')">OHF (Surchauffe)</button>
                 <button class="btn-defaut" onclick="declencherDefaut('OLF')">OLF (Surcharge)</button>
@@ -261,7 +301,7 @@
 </div>
 
 <script>
-    // 1. Structure Arborescente ATV320
+    // 1. Arborescence des menus
     const menuATV320 = {
         id: "ROOT", type: "menu", enfants: [
             { id: "rEF-", type: "menu", enfants: [] },
@@ -284,24 +324,41 @@
         ]
     };
 
-    // 2. Variables d'État
+    // 2. Banque de Scénarios TP
+    const banquesTP = {
+        tp1: {
+            titre: "TP 1 : Plaque Signalétique Moteur",
+            consignes: "1. Tension nominale (UnS) : <strong>380 V</strong><br>2. Courant nominal (nCr) : <strong>5.5 A</strong><br>3. Fréquence nominale (FrS) : <strong>50 Hz</strong>",
+            attentes: { UnS: 380.0, nCr: 5.5, FrS: 50.0 }
+        },
+        tp2: {
+            titre: "TP 2 : Configuration des Rampes",
+            consignes: "1. Temps d'accélération (ACC) : <strong>5.0 s</strong><br>2. Temps de décélération (dEC) : <strong>2.5 s</strong>",
+            attentes: { ACC: 5.0, dEC: 2.5 }
+        },
+        tp3: {
+            titre: "TP 3 : Limitation de Vitesse (LSP/HSP)",
+            consignes: "1. Petite Vitesse (LSP) : <strong>15.0 Hz</strong><br>2. Grande Vitesse (HSP) : <strong>60.0 Hz</strong>",
+            attentes: { LSP: 15.0, HSP: 60.0 }
+        }
+    };
+
+    // 3. Variables d'État
     let cheminActuel = [menuATV320];
     let indexActuel = 0;
     let modeEdition = false;
     let enValidation = false;
     let defautActif = null;
     let timerInactivite = null;
+    let dernierRapport = null; // Stocke les données d'évaluation pour l'exportation Word
 
-    // État du bornier et Moteur
-    let di1 = false; // Marche AV
-    let di2 = false; // Marche AR
+    let di1 = false; di2 = false;
     let frequenceReelle = 0.0;
     let angleRotor = 0;
-    let sensRotation = 1; // 1: FWD, -1: REV
+    let sensRotation = 1;
 
     const ecran = document.getElementById("affichage");
 
-    // Helper pour récupérer la valeur actuelle d'un paramètre
     function obtenirValeurParam(key) {
         let resultat = null;
         function chercher(noeud) {
@@ -312,7 +369,7 @@
         return resultat;
     }
 
-    // 3. Gestion de l'affichage LED
+    // 4. Moteur de Navigation
     function mettreAjourEcran() {
         if (defautActif) {
             ecran.innerText = defautActif;
@@ -322,7 +379,6 @@
 
         let noeudActuel = cheminActuel[cheminActuel.length - 1];
         
-        // Si on est à la racine et hors édition
         if (cheminActuel.length === 1 && !modeEdition) {
             if (frequenceReelle > 0.1) {
                 ecran.innerText = frequenceReelle.toFixed(1);
@@ -347,7 +403,6 @@
         }
     }
 
-    // 4. Timer Inactivité
     function reinitialiserTimeout() {
         clearTimeout(timerInactivite);
         timerInactivite = setTimeout(() => {
@@ -360,11 +415,9 @@
         }, 15000);
     }
 
-    // 5. Navigation Clavier / Touch
     function actionHaut() {
         reinitialiserTimeout();
         if (enValidation || defautActif) return;
-
         let noeudActuel = cheminActuel[cheminActuel.length - 1];
         if (modeEdition) {
             let param = noeudActuel.enfants[indexActuel];
@@ -378,7 +431,6 @@
     function actionBas() {
         reinitialiserTimeout();
         if (enValidation || defautActif) return;
-
         let noeudActuel = cheminActuel[cheminActuel.length - 1];
         if (modeEdition) {
             let param = noeudActuel.enfants[indexActuel];
@@ -394,21 +446,18 @@
     function actionEnt() {
         reinitialiserTimeout();
         if (enValidation || defautActif) return;
-
         let noeudActuel = cheminActuel[cheminActuel.length - 1];
         let selection = noeudActuel.enfants[indexActuel];
 
         if (modeEdition) {
             enValidation = true;
             ecran.classList.add("clignotement");
-
             setTimeout(() => {
                 ecran.classList.remove("clignotement");
                 modeEdition = false;
                 enValidation = false;
                 mettreAjourEcran();
             }, 1200);
-
         } else if (selection && selection.type === "menu") {
             cheminActuel.push(selection);
             indexActuel = 0;
@@ -422,7 +471,6 @@
     function actionEsc() {
         reinitialiserTimeout();
         if (enValidation) return;
-
         if (modeEdition) {
             modeEdition = false;
         } else if (cheminActuel.length > 1) {
@@ -435,22 +483,16 @@
         mettreAjourEcran();
     }
 
-    // 6. Gestion du Bornier (DI1 / DI2)
+    // 5. Commande Bornier & Simulation Moteur
     function basculerDI(num) {
-        if (num === 1) {
-            di1 = !di1;
-            if (di1) di2 = false; // Verrouillage mutuel
-        } else if (num === 2) {
-            di2 = !di2;
-            if (di2) di1 = false;
-        }
+        if (num === 1) { di1 = !di1; if (di1) di2 = false; }
+        else if (num === 2) { di2 = !di2; if (di2) di1 = false; }
         document.getElementById("sw-di1").className = di1 ? "switch-btn active" : "switch-btn";
         document.getElementById("sw-di1").innerText = di1 ? "ON" : "OFF";
         document.getElementById("sw-di2").className = di2 ? "switch-btn active" : "switch-btn";
         document.getElementById("sw-di2").innerText = di2 ? "ON" : "OFF";
     }
 
-    // 7. Moteur Physique (Boucle d'Animation & Rampes)
     function boucleMoteur() {
         const acc = obtenirValeurParam("ACC") || 3.0;
         const dec = obtenirValeurParam("dEC") || 3.0;
@@ -458,46 +500,152 @@
         const lsp = obtenirValeurParam("LSP") || 0.0;
 
         let consigneFrq = 0.0;
-
         if (!defautActif) {
             if (di1) { consigneFrq = hsp; sensRotation = 1; }
             else if (di2) { consigneFrq = hsp; sensRotation = -1; }
         }
 
-        const pasTemps = 0.05; // 50ms par cycle
-        
-        // Rampe d'accélération / décélération
+        const pasTemps = 0.05;
         if (frequenceReelle < consigneFrq) {
-            const tauxAcc = (hsp - lsp) / acc;
-            frequenceReelle += tauxAcc * pasTemps;
+            frequenceReelle += ((hsp - lsp) / acc) * pasTemps;
             if (frequenceReelle > consigneFrq) frequenceReelle = consigneFrq;
         } else if (frequenceReelle > consigneFrq) {
-            const tauxDec = hsp / dec;
-            frequenceReelle -= tauxDec * pasTemps;
+            frequenceReelle -= (hsp / dec) * pasTemps;
             if (frequenceReelle < 0) frequenceReelle = 0;
         }
 
-        // Animation Visuelle du Rotor SVG
         if (frequenceReelle > 0.1) {
             angleRotor += (frequenceReelle / 5) * sensRotation;
             document.getElementById("rotor").setAttribute("transform", `rotate(${angleRotor} 50 50)`);
         }
 
         document.getElementById("valeur-frequence").innerText = `${frequenceReelle.toFixed(1)} Hz`;
-        
-        // Mise à jour de l'affichage principal si sur l'écran racine
-        if (cheminActuel.length === 1 && !modeEdition && !defautActif) {
-            mettreAjourEcran();
-        }
+        if (cheminActuel.length === 1 && !modeEdition && !defautActif) mettreAjourEcran();
 
         setTimeout(boucleMoteur, 50);
     }
 
-    // 8. Pannes et Diagnostics
+    // 6. Gestion du Changement de TP
+    function changerTP() {
+        const cle = document.getElementById("select-tp").value;
+        const tp = banquesTP[cle];
+        document.getElementById("consigne-tp").innerHTML = `<strong>${tp.titre}</strong><br>${tp.consignes}`;
+        document.getElementById("resultat-tp").style.display = "none";
+        document.getElementById("btn-export").style.display = "none";
+    }
+
+    // 7. Évaluation et Génération des Données
+    function evaluerTP() {
+        const nom = document.getElementById("nom-etudiant").value.trim();
+        const prenom = document.getElementById("prenom-etudiant").value.trim();
+
+        if (!nom || !prenom) {
+            alert("Veuillez saisir le nom et le prénom de l'étudiant avant de valider.");
+            return;
+        }
+
+        const cle = document.getElementById("select-tp").value;
+        const tp = banquesTP[cle];
+        let points = 0;
+        let total = Object.keys(tp.attentes).length;
+        let details = [];
+
+        for (let param in tp.attentes) {
+            let valActuelle = obtenirValeurParam(param);
+            if (valActuelle === tp.attentes[param]) {
+                points++;
+                details.push({ param: param, attendu: tp.attentes[param], obtenu: valActuelle, statut: "OK" });
+            } else {
+                details.push({ param: param, attendu: tp.attentes[param], obtenu: valActuelle, statut: "ERREUR" });
+            }
+        }
+
+        const note = Math.round((points / total) * 20);
+        
+        dernierRapport = {
+            nom: nom,
+            prenom: prenom,
+            tpTitre: tp.titre,
+            note: note,
+            details: details,
+            date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+        };
+
+        const box = document.getElementById("resultat-tp");
+        box.style.display = "block";
+        box.style.background = note >= 10 ? "#1e4620" : "#5c1d24";
+        box.innerHTML = `<strong>Note : ${note} / 20</strong><br>` + 
+            details.map(d => d.statut === "OK" ? 
+                `✅ <strong>${d.param}</strong> : ${d.obtenu}` : 
+                `❌ <strong>${d.param}</strong> : ${d.obtenu} (Attendu: ${d.attendu})`
+            ).join("<br>");
+
+        document.getElementById("btn-export").style.display = "inline-block";
+    }
+
+    // 8. Exportation au format Word (.doc)
+    function exporterRapportWord() {
+        if (!dernierRapport) return;
+
+        const contenuHtml = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>Rapport d'Évaluation</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 20px; }
+                h2 { color: #003366; }
+                table { border-collapse: collapse; width: 100%; margin-top: 15px; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f2f2f2; }
+                .valide { color: green; font-weight: bold; }
+                .erreur { color: red; font-weight: bold; }
+            </style>
+            </head>
+            <body>
+                <h2>Compte-Rendu d'Évaluation - ATV320</h2>
+                <p><strong>Étudiant :</strong> ${dernierRapport.nom} ${dernierRapport.prenom}</p>
+                <p><strong>Date :</strong> ${dernierRapport.date}</p>
+                <p><strong>Épreuve :</strong> ${dernierRapport.tpTitre}</p>
+                <hr>
+                <h3>Résultat : ${dernierRapport.note} / 20</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Paramètre</th>
+                            <th>Valeur Attendue</th>
+                            <th>Valeur Obtenue</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${dernierRapport.details.map(d => `
+                            <tr>
+                                <td><b>${d.param}</b></td>
+                                <td>${d.attendu}</td>
+                                <td>${d.obtenu}</td>
+                                <td class="${d.statut === 'OK' ? 'valide' : 'erreur'}">${d.statut === 'OK' ? 'CONFORME' : 'NON CONFORME'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </body>
+            </html>
+        `;
+
+        const blob = new Blob(['\ufeff' + contenuHtml], { type: 'application/msword' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Rapport_TP_${dernierRapport.nom}_${dernierRapport.prenom}.doc`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
     function declencherDefaut(code) {
         defautActif = code;
         ecran.classList.add("clignotement");
-        di1 = false; di2 = false; // Sécurité : arrêt
+        di1 = false; di2 = false;
         basculerDI(0);
         mettreAjourEcran();
     }
@@ -509,31 +657,6 @@
         reinitialiserTimeout();
     }
 
-    // 9. Module d'Évaluation de TP
-    function evaluerTP() {
-        const attentes = { UnS: 380.0, nCr: 5.5, ACC: 5.0, HSP: 60.0 };
-        let points = 0;
-        let total = Object.keys(attentes).length;
-        let details = [];
-
-        for (let param in attentes) {
-            let valActuelle = obtenirValeurParam(param);
-            if (valActuelle === attentes[param]) {
-                points++;
-                details.push(`✅ <strong>${param}</strong> : Correct (${valActuelle})`);
-            } else {
-                details.push(`❌ <strong>${param}</strong> : Attendu ${attentes[param]}, Trouvé ${valActuelle}`);
-            }
-        }
-
-        const note = Math.round((points / total) * 20);
-        const box = document.getElementById("resultat-tp");
-        box.style.display = "block";
-        box.style.background = note >= 10 ? "#1e4620" : "#5c1d24";
-        box.innerHTML = `<strong>Note : ${note} / 20</strong><br><br>` + details.join("<br>");
-    }
-
-    // 10. Appui long pour défilement rapide
     function configurerAppuiLong(elementId, action) {
         const btn = document.getElementById(elementId);
         let timerInitial, intervalRapide;
@@ -541,15 +664,10 @@
         const demarrer = (e) => {
             if (e.cancelable) e.preventDefault();
             action();
-            timerInitial = setTimeout(() => {
-                intervalRapide = setInterval(action, 100);
-            }, 400);
+            timerInitial = setTimeout(() => { intervalRapide = setInterval(action, 100); }, 400);
         };
 
-        const arreter = () => {
-            clearTimeout(timerInitial);
-            clearInterval(intervalRapide);
-        };
+        const arreter = () => { clearTimeout(timerInitial); clearInterval(intervalRapide); };
 
         btn.addEventListener('touchstart', demarrer, { passive: false });
         btn.addEventListener('touchend', arreter);
@@ -559,12 +677,12 @@
         btn.addEventListener('mouseleave', arreter);
     }
 
-    // Initialisation globale
     document.addEventListener('DOMContentLoaded', () => {
         configurerAppuiLong('btn-haut', actionHaut);
         configurerAppuiLong('btn-bas', actionBas);
+        changerTP();
         reinitialiserTimeout();
-        boucleMoteur(); // Lancement de la physique moteur
+        boucleMoteur();
     });
 </script>
 
