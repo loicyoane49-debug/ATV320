@@ -3,38 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Simulateur ATV320 - Complet</title>
+    <title>Simulateur ATV320 - Plateforme Complète</title>
     <style>
         body {
-            background-color: #e9ecef;
+            background-color: #1e1e24;
+            color: #fff;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            font-family: Arial, sans-serif;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             user-select: none;
             -webkit-user-select: none;
+            box-sizing: border-box;
         }
+
+        .plateforme {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            max-width: 1100px;
+            width: 100%;
+        }
+
+        /* --- 1. VARIATEUR ATV320 --- */
         .variateur {
             background-color: #2b2b2b;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
             width: 300px;
+            border: 2px solid #444;
         }
         .ecran {
-            background-color: #3b0000;
-            color: #ff0000;
+            background-color: #1a0000;
+            color: #ff2a2a;
             font-family: 'Courier New', Courier, monospace;
-            font-size: 40px;
+            font-size: 38px;
+            font-weight: bold;
             text-align: right;
             padding: 15px;
-            border-radius: 5px;
+            border-radius: 6px;
             margin-bottom: 20px;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.9);
             letter-spacing: 2px;
+            height: 45px;
+            line-height: 45px;
         }
         .clignotement {
             animation: clignoterLed 0.25s infinite alternate;
@@ -46,282 +63,510 @@
         .controles {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            gap: 12px;
         }
-        button {
-            background-color: #4a4a4a;
+        button.btn-atv {
+            background-color: #444;
             color: white;
             border: none;
             padding: 15px;
-            font-size: 18px;
-            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
             cursor: pointer;
             box-shadow: 0 4px #1a1a1a;
             touch-action: manipulation;
         }
-        button:active {
+        button.btn-atv:active {
             box-shadow: 0 0px #1a1a1a;
             transform: translateY(4px);
         }
-        .btn-esc { background-color: #8b0000; }
-        .btn-ent { background-color: #006400; }
+        .btn-esc { background-color: #a71d2a !important; }
+        .btn-ent { background-color: #1e7e34 !important; }
         .molette {
             grid-column: span 2;
             display: flex;
             justify-content: space-between;
         }
-        .molette button { width: 45%; }
+        .molette button { width: 48%; }
 
-        /* Panneau Formateur : Injection de défauts */
-        .panneau-defauts {
-            margin-top: 25px;
-            background: #ffffff;
-            padding: 15px;
+        /* --- 2. BORNIER DE COMMANDE (DI1 / DI2) --- */
+        .bornier {
+            margin-top: 15px;
+            background: #202020;
+            padding: 12px;
             border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            text-align: center;
-            width: 300px;
-            box-sizing: border-box;
+            border: 1px solid #3a3a3a;
         }
-        .panneau-defauts h4 { margin: 0 0 10px 0; color: #333; }
-        .btn-defaut {
-            background-color: #d9534f;
-            font-size: 13px;
-            padding: 8px;
-            margin: 3px;
-            box-shadow: none;
+        .bornier-title { font-size: 13px; color: #aaa; margin-bottom: 8px; text-align: center; }
+        .interrupteurs { display: flex; justify-content: space-around; }
+        .switch-container { text-align: center; font-size: 12px; }
+        .switch-btn {
+            background: #555;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 4px;
+            font-weight: bold;
         }
-        .btn-reset {
-            background-color: #0275d8;
-            font-size: 13px;
-            padding: 8px;
-            margin-top: 8px;
+        .switch-btn.active { background: #007bff; }
+
+        /* --- 3. MOTEUR ET RENDU DYNAMIQUE --- */
+        .panneau-moteur {
+            background-color: #2b2b2b;
+            padding: 20px;
+            border-radius: 12px;
+            width: 280px;
+            border: 2px solid #444;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .moteur-svg {
+            width: 140px;
+            height: 140px;
+            margin: 15px 0;
+        }
+        .rotor {
+            transform-origin: center;
+            transition: transform 0.1s linear;
+        }
+        .jauge-frequence {
             width: 100%;
-            box-shadow: none;
+            background: #111;
+            border-radius: 6px;
+            padding: 10px;
+            box-sizing: border-box;
+            text-align: center;
         }
+        .valeur-frequence { font-size: 22px; color: #00ffcc; font-family: monospace; font-weight: bold; }
+
+        /* --- 4. PANNEAU FORMATEUR & TP --- */
+        .panneau-droite {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 320px;
+        }
+        .carte {
+            background: #2b2b2b;
+            padding: 15px;
+            border-radius: 12px;
+            border: 2px solid #444;
+        }
+        .carte h3 { margin-top: 0; font-size: 16px; color: #00ffcc; border-bottom: 1px solid #444; padding-bottom: 8px; }
+        
+        /* TP Evaluation */
+        .consigne-box { background: #1a1a1a; padding: 10px; border-radius: 6px; font-size: 13px; margin-bottom: 10px; line-height: 1.4; }
+        .btn-eval { background: #28a745; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .resultat-eval { margin-top: 10px; font-size: 13px; padding: 8px; border-radius: 4px; display: none; }
+
+        /* Panneau Pannes */
+        .grid-defauts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .btn-defaut { background: #dc3545; color: white; border: none; padding: 8px; font-size: 12px; border-radius: 4px; cursor: pointer; }
+        .btn-reset { background: #17a2b8; color: white; border: none; padding: 8px; font-size: 12px; border-radius: 4px; cursor: pointer; grid-column: span 2; }
     </style>
 </head>
 <body>
 
+<h2 style="margin-bottom: 20px; text-align: center;">Simulateur Pédagogique Altivar ATV320</h2>
+
+<div class="plateforme">
+
+    <!-- BLOC 1 : VARIATEUR DE VITESSE & BORNIER -->
     <div class="variateur">
         <div class="ecran" id="affichage">rdY</div>
         
         <div class="controles">
-            <button class="btn-esc" onclick="actionEsc()">ESC</button>
-            <button class="btn-ent" onclick="actionEnt()">ENT</button>
+            <button class="btn-atv btn-esc" onclick="actionEsc()">ESC</button>
+            <button class="btn-atv btn-ent" onclick="actionEnt()">ENT</button>
             <div class="molette">
-                <button id="btn-haut">▲</button>
-                <button id="btn-bas">▼</button>
+                <button class="btn-atv" id="btn-haut">▲</button>
+                <button class="btn-atv" id="btn-bas">▼</button>
+            </div>
+        </div>
+
+        <!-- Bornier Virtuel -->
+        <div class="bornier">
+            <div class="bornier-title">Bornier de Commande Virtuel</div>
+            <div class="interrupteurs">
+                <div class="switch-container">
+                    <div>DI1 (FWD)</div>
+                    <button class="switch-btn" id="sw-di1" onclick="basculerDI(1)">OFF</button>
+                </div>
+                <div class="switch-container">
+                    <div>DI2 (REV)</div>
+                    <button class="switch-btn" id="sw-di2" onclick="basculerDI(2)">OFF</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Outil Formateur pour déclencher des pannes -->
-    <div class="panneau-defauts">
-        <h4>Simulateur de Pannes</h4>
-        <button class="btn-defaut" onclick="declencherDefaut('OHF')">OHF (Surchauffe)</button>
-        <button class="btn-defaut" onclick="declencherDefaut('OLF')">OLF (Surcharge)</button>
-        <button class="btn-defaut" onclick="declencherDefaut('OSF')">OSF (Surtension)</button>
-        <button class="btn-reset" onclick="acquitterDefaut()">Acquitter / Reset</button>
+    <!-- BLOC 2 : MOTEUR VIRTUEL ANIMÉ -->
+    <div class="panneau-moteur">
+        <h3 style="margin: 0; font-size: 16px;">Moteur Asynchrone</h3>
+        
+        <svg class="moteur-svg" viewBox="0 0 100 100">
+            <!-- Stator -->
+            <circle cx="50" cy="50" r="45" fill="#3a3a3a" stroke="#666" stroke-width="4"/>
+            <circle cx="50" cy="50" r="32" fill="#1a1a1a" stroke="#444" stroke-width="2"/>
+            <!-- Rotor -->
+            <g id="rotor" class="rotor">
+                <circle cx="50" cy="50" r="22" fill="#007bff"/>
+                <line x1="50" y1="28" x2="50" y2="72" stroke="#fff" stroke-width="3"/>
+                <line x1="28" y1="50" x2="72" y2="50" stroke="#fff" stroke-width="3"/>
+            </g>
+        </svg>
+
+        <div class="jauge-frequence">
+            <span style="font-size: 11px; color: #888;">FRÉQUENCE REELLE</span><br>
+            <span class="valeur-frequence" id="valeur-frequence">0.0 Hz</span>
+        </div>
     </div>
 
-    <script>
-        // 1. Arborescence enrichie (Rampes + Plaque Moteur drC-)
-        const menuATV320 = {
-            id: "ROOT", type: "menu", enfants: [
-                { id: "rEF-", type: "menu", enfants: [] },
-                { id: "COnF", type: "menu", enfants: [
-                    { id: "FULL", type: "menu", enfants: [
-                        { id: "drC-", type: "menu", enfants: [
-                            { id: "bFr", type: "param", valeur: 50.0, pas: 10.0 }, // Fréquence base (Hz)
-                            { id: "UnS", type: "param", valeur: 400.0, pas: 10.0 }, // Tension nominale (V)
-                            { id: "nCr", type: "param", valeur: 4.2, pas: 0.1 },   // Courant nominal (A)
-                            { id: "FrS", type: "param", valeur: 50.0, pas: 1.0 }   // Fréquence nominale
-                        ]},
-                        { id: "FUn-", type: "menu", enfants: [
-                            { id: "ACC", type: "param", valeur: 3.0, pas: 0.1 },   // Accélération (s)
-                            { id: "dEC", type: "param", valeur: 3.0, pas: 0.1 },   // Décélération (s)
-                            { id: "LSP", type: "param", valeur: 0.0, pas: 0.1 },   // Petite vitesse (Hz)
-                            { id: "HSP", type: "param", valeur: 50.0, pas: 0.1 }   // Grande vitesse (Hz)
-                        ]}
+    <!-- BLOC 3 : CAHIER DES CHARGES (TP) ET DEFFAUTS -->
+    <div class="panneau-droite">
+        
+        <!-- Module d'Évaluation TP -->
+        <div class="carte">
+            <h3>TP 1 : Configurer le Moteur</h3>
+            <div class="consigne-box">
+                <strong>Cahier des charges :</strong><br>
+                1. Tension nominale (<code>UnS</code>) : <strong>380 V</strong><br>
+                2. Courant nominal (<code>nCr</code>) : <strong>5.5 A</strong><br>
+                3. Temps d'accélération (<code>ACC</code>) : <strong>5.0 s</strong><br>
+                4. Grande Vitesse (<code>HSP</code>) : <strong>60.0 Hz</strong>
+            </div>
+            <button class="btn-eval" onclick="evaluerTP()">Évaluer le Paramétrage</button>
+            <div id="resultat-tp" class="resultat-eval"></div>
+        </div>
+
+        <!-- Simulation de Pannes -->
+        <div class="carte">
+            <h3>Pannes & Diagnostics</h3>
+            <div class="grid-defauts">
+                <button class="btn-defaut" onclick="declencherDefaut('OHF')">OHF (Surchauffe)</button>
+                <button class="btn-defaut" onclick="declencherDefaut('OLF')">OLF (Surcharge)</button>
+                <button class="btn-defaut" onclick="declencherDefaut('OSF')">OSF (Surtension)</button>
+                <button class="btn-defaut" onclick="declencherDefaut('InF')">InF (Défaut Interne)</button>
+                <button class="btn-reset" onclick="acquitterDefaut()">Acquitter / Reset</button>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    // 1. Structure Arborescente ATV320
+    const menuATV320 = {
+        id: "ROOT", type: "menu", enfants: [
+            { id: "rEF-", type: "menu", enfants: [] },
+            { id: "COnF", type: "menu", enfants: [
+                { id: "FULL", type: "menu", enfants: [
+                    { id: "drC-", type: "menu", enfants: [
+                        { id: "bFr", type: "param", valeur: 50.0, pas: 10.0, paramKey: "bFr" },
+                        { id: "UnS", type: "param", valeur: 400.0, pas: 10.0, paramKey: "UnS" },
+                        { id: "nCr", type: "param", valeur: 4.2, pas: 0.1, paramKey: "nCr" },
+                        { id: "FrS", type: "param", valeur: 50.0, pas: 1.0, paramKey: "FrS" }
+                    ]},
+                    { id: "FUn-", type: "menu", enfants: [
+                        { id: "ACC", type: "param", valeur: 3.0, pas: 0.1, paramKey: "ACC" },
+                        { id: "dEC", type: "param", valeur: 3.0, pas: 0.1, paramKey: "dEC" },
+                        { id: "LSP", type: "param", valeur: 0.0, pas: 0.1, paramKey: "LSP" },
+                        { id: "HSP", type: "param", valeur: 50.0, pas: 0.1, paramKey: "HSP" }
                     ]}
                 ]}
-            ]
-        };
+            ]}
+        ]
+    };
 
-        // 2. Variables d'état
-        let cheminActuel = [menuATV320];
-        let indexActuel = 0;
-        let modeEdition = false;
-        let enValidation = false;
-        let defautActif = null; // Stocke le code d'erreur si présent
-        let timerInactivite = null;
+    // 2. Variables d'État
+    let cheminActuel = [menuATV320];
+    let indexActuel = 0;
+    let modeEdition = false;
+    let enValidation = false;
+    let defautActif = null;
+    let timerInactivite = null;
 
-        const ecran = document.getElementById("affichage");
+    // État du bornier et Moteur
+    let di1 = false; // Marche AV
+    let di2 = false; // Marche AR
+    let frequenceReelle = 0.0;
+    let angleRotor = 0;
+    let sensRotation = 1; // 1: FWD, -1: REV
 
-        // 3. Gestion de l'affichage
-        function mettreAjourEcran() {
-            if (defautActif) {
-                ecran.innerText = defautActif;
-                ecran.style.color = "#ff0000";
-                return;
-            }
+    const ecran = document.getElementById("affichage");
 
-            let noeudActuel = cheminActuel[cheminActuel.length - 1];
-            
-            if (cheminActuel.length === 1 && !modeEdition) {
+    // Helper pour récupérer la valeur actuelle d'un paramètre
+    function obtenirValeurParam(key) {
+        let resultat = null;
+        function chercher(noeud) {
+            if (noeud.paramKey === key) resultat = noeud.valeur;
+            if (noeud.enfants) noeud.enfants.forEach(chercher);
+        }
+        chercher(menuATV320);
+        return resultat;
+    }
+
+    // 3. Gestion de l'affichage LED
+    function mettreAjourEcran() {
+        if (defautActif) {
+            ecran.innerText = defautActif;
+            ecran.style.color = "#ff0000";
+            return;
+        }
+
+        let noeudActuel = cheminActuel[cheminActuel.length - 1];
+        
+        // Si on est à la racine et hors édition
+        if (cheminActuel.length === 1 && !modeEdition) {
+            if (frequenceReelle > 0.1) {
+                ecran.innerText = frequenceReelle.toFixed(1);
+                ecran.style.color = "#00ffcc";
+            } else {
                 ecran.innerText = "rdY";
                 ecran.style.color = "#ff0000";
-                return;
             }
+            return;
+        }
 
-            if (modeEdition) {
-                ecran.innerText = noeudActuel.enfants[indexActuel].valeur.toFixed(1);
-                ecran.style.color = "#00ff00";
+        if (modeEdition) {
+            ecran.innerText = noeudActuel.enfants[indexActuel].valeur.toFixed(1);
+            ecran.style.color = "#00ff00";
+        } else {
+            if (noeudActuel.enfants.length > 0) {
+                ecran.innerText = noeudActuel.enfants[indexActuel].id;
             } else {
-                if (noeudActuel.enfants.length > 0) {
-                    ecran.innerText = noeudActuel.enfants[indexActuel].id;
-                } else {
-                    ecran.innerText = "----";
-                }
-                ecran.style.color = "#ff0000";
+                ecran.innerText = "----";
             }
+            ecran.style.color = "#ff0000";
         }
+    }
 
-        // 4. Timer d'inactivité (Retour à rdY après 15s)
-        function reinitialiserTimeout() {
-            clearTimeout(timerInactivite);
-            timerInactivite = setTimeout(() => {
-                if (!defautActif) {
-                    cheminActuel = [menuATV320];
-                    indexActuel = 0;
-                    modeEdition = false;
-                    mettreAjourEcran();
-                }
-            }, 15000);
-        }
-
-        // 5. Actions des boutons
-        function actionHaut() {
-            reinitialiserTimeout();
-            if (enValidation || defautActif) return;
-
-            let noeudActuel = cheminActuel[cheminActuel.length - 1];
-            if (modeEdition) {
-                let param = noeudActuel.enfants[indexActuel];
-                param.valeur = parseFloat((param.valeur + param.pas).toFixed(1));
-            } else {
-                if (indexActuel < noeudActuel.enfants.length - 1) indexActuel++;
-            }
-            mettreAjourEcran();
-        }
-
-        function actionBas() {
-            reinitialiserTimeout();
-            if (enValidation || defautActif) return;
-
-            let noeudActuel = cheminActuel[cheminActuel.length - 1];
-            if (modeEdition) {
-                let param = noeudActuel.enfants[indexActuel];
-                if (param.valeur - param.pas >= 0) {
-                    param.valeur = parseFloat((param.valeur - param.pas).toFixed(1));
-                }
-            } else {
-                if (indexActuel > 0) indexActuel--;
-            }
-            mettreAjourEcran();
-        }
-
-        function actionEnt() {
-            reinitialiserTimeout();
-            if (enValidation || defautActif) return;
-
-            let noeudActuel = cheminActuel[cheminActuel.length - 1];
-            let selection = noeudActuel.enfants[indexActuel];
-
-            if (modeEdition) {
-                enValidation = true;
-                ecran.classList.add("clignotement");
-
-                setTimeout(() => {
-                    ecran.classList.remove("clignotement");
-                    modeEdition = false;
-                    enValidation = false;
-                    mettreAjourEcran();
-                }, 1200);
-
-            } else if (selection && selection.type === "menu") {
-                cheminActuel.push(selection);
-                indexActuel = 0;
-                mettreAjourEcran();
-            } else if (selection && selection.type === "param") {
-                modeEdition = true;
-                mettreAjourEcran();
-            }
-        }
-
-        function actionEsc() {
-            reinitialiserTimeout();
-            if (enValidation) return;
-
-            if (modeEdition) {
-                modeEdition = false;
-            } else if (cheminActuel.length > 1) {
-                cheminActuel.pop();
-                indexActuel = 0;
-            } else {
+    // 4. Timer Inactivité
+    function reinitialiserTimeout() {
+        clearTimeout(timerInactivite);
+        timerInactivite = setTimeout(() => {
+            if (!defautActif) {
                 cheminActuel = [menuATV320];
                 indexActuel = 0;
+                modeEdition = false;
+                mettreAjourEcran();
             }
-            mettreAjourEcran();
-        }
+        }, 15000);
+    }
 
-        // 6. Gestion du Panneau de Défauts
-        function declencherDefaut(codeDefaut) {
-            defautActif = codeDefaut;
+    // 5. Navigation Clavier / Touch
+    function actionHaut() {
+        reinitialiserTimeout();
+        if (enValidation || defautActif) return;
+
+        let noeudActuel = cheminActuel[cheminActuel.length - 1];
+        if (modeEdition) {
+            let param = noeudActuel.enfants[indexActuel];
+            param.valeur = parseFloat((param.valeur + param.pas).toFixed(1));
+        } else {
+            if (indexActuel < noeudActuel.enfants.length - 1) indexActuel++;
+        }
+        mettreAjourEcran();
+    }
+
+    function actionBas() {
+        reinitialiserTimeout();
+        if (enValidation || defautActif) return;
+
+        let noeudActuel = cheminActuel[cheminActuel.length - 1];
+        if (modeEdition) {
+            let param = noeudActuel.enfants[indexActuel];
+            if (param.valeur - param.pas >= 0) {
+                param.valeur = parseFloat((param.valeur - param.pas).toFixed(1));
+            }
+        } else {
+            if (indexActuel > 0) indexActuel--;
+        }
+        mettreAjourEcran();
+    }
+
+    function actionEnt() {
+        reinitialiserTimeout();
+        if (enValidation || defautActif) return;
+
+        let noeudActuel = cheminActuel[cheminActuel.length - 1];
+        let selection = noeudActuel.enfants[indexActuel];
+
+        if (modeEdition) {
+            enValidation = true;
             ecran.classList.add("clignotement");
+
+            setTimeout(() => {
+                ecran.classList.remove("clignotement");
+                modeEdition = false;
+                enValidation = false;
+                mettreAjourEcran();
+            }, 1200);
+
+        } else if (selection && selection.type === "menu") {
+            cheminActuel.push(selection);
+            indexActuel = 0;
+            mettreAjourEcran();
+        } else if (selection && selection.type === "param") {
+            modeEdition = true;
+            mettreAjourEcran();
+        }
+    }
+
+    function actionEsc() {
+        reinitialiserTimeout();
+        if (enValidation) return;
+
+        if (modeEdition) {
+            modeEdition = false;
+        } else if (cheminActuel.length > 1) {
+            cheminActuel.pop();
+            indexActuel = 0;
+        } else {
+            cheminActuel = [menuATV320];
+            indexActuel = 0;
+        }
+        mettreAjourEcran();
+    }
+
+    // 6. Gestion du Bornier (DI1 / DI2)
+    function basculerDI(num) {
+        if (num === 1) {
+            di1 = !di1;
+            if (di1) di2 = false; // Verrouillage mutuel
+        } else if (num === 2) {
+            di2 = !di2;
+            if (di2) di1 = false;
+        }
+        document.getElementById("sw-di1").className = di1 ? "switch-btn active" : "switch-btn";
+        document.getElementById("sw-di1").innerText = di1 ? "ON" : "OFF";
+        document.getElementById("sw-di2").className = di2 ? "switch-btn active" : "switch-btn";
+        document.getElementById("sw-di2").innerText = di2 ? "ON" : "OFF";
+    }
+
+    // 7. Moteur Physique (Boucle d'Animation & Rampes)
+    function boucleMoteur() {
+        const acc = obtenirValeurParam("ACC") || 3.0;
+        const dec = obtenirValeurParam("dEC") || 3.0;
+        const hsp = obtenirValeurParam("HSP") || 50.0;
+        const lsp = obtenirValeurParam("LSP") || 0.0;
+
+        let consigneFrq = 0.0;
+
+        if (!defautActif) {
+            if (di1) { consigneFrq = hsp; sensRotation = 1; }
+            else if (di2) { consigneFrq = hsp; sensRotation = -1; }
+        }
+
+        const pasTemps = 0.05; // 50ms par cycle
+        
+        // Rampe d'accélération / décélération
+        if (frequenceReelle < consigneFrq) {
+            const tauxAcc = (hsp - lsp) / acc;
+            frequenceReelle += tauxAcc * pasTemps;
+            if (frequenceReelle > consigneFrq) frequenceReelle = consigneFrq;
+        } else if (frequenceReelle > consigneFrq) {
+            const tauxDec = hsp / dec;
+            frequenceReelle -= tauxDec * pasTemps;
+            if (frequenceReelle < 0) frequenceReelle = 0;
+        }
+
+        // Animation Visuelle du Rotor SVG
+        if (frequenceReelle > 0.1) {
+            angleRotor += (frequenceReelle / 5) * sensRotation;
+            document.getElementById("rotor").setAttribute("transform", `rotate(${angleRotor} 50 50)`);
+        }
+
+        document.getElementById("valeur-frequence").innerText = `${frequenceReelle.toFixed(1)} Hz`;
+        
+        // Mise à jour de l'affichage principal si sur l'écran racine
+        if (cheminActuel.length === 1 && !modeEdition && !defautActif) {
             mettreAjourEcran();
         }
 
-        function acquitterDefaut() {
-            ecran.classList.remove("clignotement");
-            defautActif = null;
-            mettreAjourEcran();
-            reinitialiserTimeout();
+        setTimeout(boucleMoteur, 50);
+    }
+
+    // 8. Pannes et Diagnostics
+    function declencherDefaut(code) {
+        defautActif = code;
+        ecran.classList.add("clignotement");
+        di1 = false; di2 = false; // Sécurité : arrêt
+        basculerDI(0);
+        mettreAjourEcran();
+    }
+
+    function acquitterDefaut() {
+        ecran.classList.remove("clignotement");
+        defautActif = null;
+        mettreAjourEcran();
+        reinitialiserTimeout();
+    }
+
+    // 9. Module d'Évaluation de TP
+    function evaluerTP() {
+        const attentes = { UnS: 380.0, nCr: 5.5, ACC: 5.0, HSP: 60.0 };
+        let points = 0;
+        let total = Object.keys(attentes).length;
+        let details = [];
+
+        for (let param in attentes) {
+            let valActuelle = obtenirValeurParam(param);
+            if (valActuelle === attentes[param]) {
+                points++;
+                details.push(`✅ <strong>${param}</strong> : Correct (${valActuelle})`);
+            } else {
+                details.push(`❌ <strong>${param}</strong> : Attendu ${attentes[param]}, Trouvé ${valActuelle}`);
+            }
         }
 
-        // 7. Appui long (Défilement rapide)
-        function configurerAppuiLong(elementId, action) {
-            const btn = document.getElementById(elementId);
-            let timerInitial, intervalRapide;
+        const note = Math.round((points / total) * 20);
+        const box = document.getElementById("resultat-tp");
+        box.style.display = "block";
+        box.style.background = note >= 10 ? "#1e4620" : "#5c1d24";
+        box.innerHTML = `<strong>Note : ${note} / 20</strong><br><br>` + details.join("<br>");
+    }
 
-            const demarrer = (e) => {
-                if (e.cancelable) e.preventDefault();
-                action();
-                timerInitial = setTimeout(() => {
-                    intervalRapide = setInterval(action, 100);
-                }, 400);
-            };
+    // 10. Appui long pour défilement rapide
+    function configurerAppuiLong(elementId, action) {
+        const btn = document.getElementById(elementId);
+        let timerInitial, intervalRapide;
 
-            const arreter = () => {
-                clearTimeout(timerInitial);
-                clearInterval(intervalRapide);
-            };
+        const demarrer = (e) => {
+            if (e.cancelable) e.preventDefault();
+            action();
+            timerInitial = setTimeout(() => {
+                intervalRapide = setInterval(action, 100);
+            }, 400);
+        };
 
-            btn.addEventListener('touchstart', demarrer, { passive: false });
-            btn.addEventListener('touchend', arreter);
-            btn.addEventListener('touchcancel', arreter);
-            btn.addEventListener('mousedown', demarrer);
-            btn.addEventListener('mouseup', arreter);
-            btn.addEventListener('mouseleave', arreter);
-        }
+        const arreter = () => {
+            clearTimeout(timerInitial);
+            clearInterval(intervalRapide);
+        };
 
-        // Initialisation
-        document.addEventListener('DOMContentLoaded', () => {
-            configurerAppuiLong('btn-haut', actionHaut);
-            configurerAppuiLong('btn-bas', actionBas);
-            reinitialiserTimeout();
-        });
-    </script>
+        btn.addEventListener('touchstart', demarrer, { passive: false });
+        btn.addEventListener('touchend', arreter);
+        btn.addEventListener('touchcancel', arreter);
+        btn.addEventListener('mousedown', demarrer);
+        btn.addEventListener('mouseup', arreter);
+        btn.addEventListener('mouseleave', arreter);
+    }
+
+    // Initialisation globale
+    document.addEventListener('DOMContentLoaded', () => {
+        configurerAppuiLong('btn-haut', actionHaut);
+        configurerAppuiLong('btn-bas', actionBas);
+        reinitialiserTimeout();
+        boucleMoteur(); // Lancement de la physique moteur
+    });
+</script>
+
 </body>
 </html>
