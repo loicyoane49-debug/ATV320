@@ -2,183 +2,149 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Simulateur ATV320</title>
     <style>
-        /* Styles pour reproduire l'aspect du variateur, optimisé pour mobile */
+        /* Style responsive PC & Mobile */
         body {
-            background-color: #f4f4f9;
+            background-color: #1a1a1a;
+            color: #fff;
+            font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-            font-family: Arial, sans-serif;
+            user-select: none; /* Empêche la sélection de texte au maintien */
         }
-        .variateur {
+        .facade-variateur {
             background-color: #2b2b2b;
+            border: 4px solid #444;
+            border-radius: 12px;
             padding: 20px;
-            border-radius: 10px;
+            width: 280px;
+            text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            width: 300px;
         }
-        .ecran {
-            background-color: #3b0000;
-            color: #ff0000;
-            font-family: 'Courier New', Courier, monospace; /* Imitation LED */
-            font-size: 40px;
-            text-align: right;
+        .ecran-led {
+            background-color: #111;
+            color: #ff2a2a;
+            font-family: 'Courier New', monospace;
+            font-size: 2.2rem;
+            font-weight: bold;
             padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+            border-radius: 6px;
+            border: 2px solid #333;
+            margin-bottom: 25px;
             letter-spacing: 2px;
+            min-height: 40px;
         }
-        .controles {
+        .clignotement {
+            animation: blink 0.25s infinite alternate;
+        }
+        @keyframes blink {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        .pave-boutons {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
         }
-        button {
-            background-color: #4a4a4a;
-            color: white;
-            border: none;
+        .btn-atv {
+            background-color: #3a3a3a;
+            color: #fff;
+            border: 2px solid #555;
             padding: 15px;
-            font-size: 18px;
-            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 8px;
             cursor: pointer;
-            box-shadow: 0 4px #1a1a1a;
+            touch-action: manipulation;
         }
-        button:active {
-            box-shadow: 0 0px #1a1a1a;
-            transform: translateY(4px);
+        .btn-atv:active {
+            background-color: #555;
+            transform: scale(0.96);
         }
-        .btn-esc { background-color: #8b0000; }
-        .btn-ent { background-color: #006400; }
-        .molette {
-            grid-column: span 2;
-            display: flex;
-            justify-content: space-between;
-        }
-        .molette button { width: 45%; }
     </style>
 </head>
 <body>
 
-    <div class="variateur">
-        <div class="ecran" id="affichage">rdy</div>
-        
-        <div class="controles">
-            <button class="btn-esc" onclick="actionEsc()">ESC</button>
-            <button class="btn-ent" onclick="actionEnt()">ENT</button>
-            <div class="molette">
-                <button onclick="actionHaut()">▲</button>
-                <button onclick="actionBas()">▼</button>
-            </div>
-        </div>
+<div class="facade-variateur">
+    <div id="affichage_led" class="ecran-led">rEF-</div>
+    
+    <div class="pave-boutons">
+        <button id="btn_esc" class="btn-atv">ESC</button>
+        <button id="btn_ent" class="btn-atv">ENT</button>
+        <button id="btn_haut" class="btn-atv">▲</button>
+        <button id="btn_bas" class="btn-atv">▼</button>
     </div>
+</div>
 
-    <script>
-        // 1. La base de données (L'arborescence du menu)
-        const menuATV320 = {
-            id: "ROOT", type: "menu", enfants: [
-                { id: "rEF-", type: "menu", enfants: [] },
-                { id: "COnF", type: "menu", enfants: [
-                    { id: "FULL", type: "menu", enfants: [
-                        { id: "ACC", type: "param", valeur: 3.0, pas: 0.1 },
-                        { id: "dEC", type: "param", valeur: 3.0, pas: 0.1 },
-                        { id: "LSP", type: "param", valeur: 0.0, pas: 0.1 },
-                        { id: "HSP", type: "param", valeur: 50.0, pas: 0.1 }
-                    ]}
-                ]}
-            ]
+<script>
+    const ecran = document.getElementById('affichage_led');
+    let valeurFrequence = 50.0;
+    let modeEdition = false;
+
+    // 1. Gestion du clignotement à la validation (ENT)
+    function validerSaisie(callback) {
+        ecran.classList.add('clignotement');
+        setTimeout(() => {
+            ecran.classList.remove('clignotement');
+            if (callback) callback();
+        }, 1200);
+    }
+
+    document.getElementById('btn_ent').addEventListener('click', () => {
+        validerSaisie(() => {
+            modeEdition = !modeEdition;
+            ecran.innerText = modeEdition ? valeurFrequence.toFixed(1) : "rEF-";
+        });
+    });
+
+    // 2. Gestion hybride (PC/Mobile) pour l'appui long
+    function attacherAppuiLong(element, action) {
+        let timerInitial, intervalRapide;
+
+        const demarrer = (e) => {
+            if (e.cancelable) e.preventDefault();
+            action();
+            timerInitial = setTimeout(() => {
+                intervalRapide = setInterval(action, 100);
+            }, 400);
         };
 
-        // 2. Les variables d'état (La mémoire du simulateur)
-        let cheminActuel = [menuATV320]; // Trace où on est dans les menus
-        let indexActuel = 0; // Position de la molette
-        let modeEdition = false; // Vrai si on est en train de modifier une valeur
+        const arreter = () => {
+            clearTimeout(timerInitial);
+            clearInterval(intervalRapide);
+        };
 
-        // 3. Les fonctions de navigation
-        const ecran = document.getElementById("affichage");
+        // Événements Tactiles
+        element.addEventListener('touchstart', demarrer, { passive: false });
+        element.addEventListener('touchend', arreter);
+        element.addEventListener('touchcancel', arreter);
 
-        function mettreAjourEcran() {
-            let noeudActuel = cheminActuel[cheminActuel.length - 1];
-            
-            if (modeEdition) {
-                // Affiche la valeur numérique avec 1 décimale
-                ecran.innerText = noeudActuel.enfants[indexActuel].valeur.toFixed(1);
-                ecran.style.color = "#00ff00"; // Clignotement simulé (couleur différente)
-            } else {
-                // Affiche le nom du menu ou du paramètre
-                if (noeudActuel.enfants.length > 0) {
-                    ecran.innerText = noeudActuel.enfants[indexActuel].id;
-                } else {
-                    ecran.innerText = "----"; 
-                }
-                ecran.style.color = "#ff0000";
-            }
+        // Événements Souris PC
+        element.addEventListener('mousedown', demarrer);
+        element.addEventListener('mouseup', arreter);
+        element.addEventListener('mouseleave', arreter);
+    }
+
+    // Incrémentation / Décrémentation
+    attacherAppuiLong(document.getElementById('btn_haut'), () => {
+        if (valeurFrequence < 500.0) {
+            valeurFrequence = parseFloat((valeurFrequence + 0.1).toFixed(1));
+            ecran.innerText = valeurFrequence.toFixed(1);
         }
+    });
 
-        function actionHaut() {
-            let noeudActuel = cheminActuel[cheminActuel.length - 1];
-            if (modeEdition) {
-                // Augmente la valeur du paramètre
-                noeudActuel.enfants[indexActuel].valeur += noeudActuel.enfants[indexActuel].pas;
-            } else {
-                // Fait défiler le menu vers le haut
-                if (indexActuel < noeudActuel.enfants.length - 1) indexActuel++;
-            }
-            mettreAjourEcran();
+    attacherAppuiLong(document.getElementById('btn_bas'), () => {
+        if (valeurFrequence > 0.0) {
+            valeurFrequence = parseFloat((valeurFrequence - 0.1).toFixed(1));
+            ecran.innerText = valeurFrequence.toFixed(1);
         }
+    });
+</script>
 
-        function actionBas() {
-            let noeudActuel = cheminActuel[cheminActuel.length - 1];
-            if (modeEdition) {
-                // Diminue la valeur du paramètre
-                noeudActuel.enfants[indexActuel].valeur -= noeudActuel.enfants[indexActuel].pas;
-            } else {
-                // Fait défiler le menu vers le bas
-                if (indexActuel > 0) indexActuel--;
-            }
-            mettreAjourEcran();
-        }
-
-        function actionEnt() {
-            let noeudActuel = cheminActuel[cheminActuel.length - 1];
-            let selection = noeudActuel.enfants[indexActuel];
-
-            if (modeEdition) {
-                // Valide et quitte le mode édition
-                modeEdition = false;
-            } else if (selection.type === "menu") {
-                // Entre dans le sous-menu
-                cheminActuel.push(selection);
-                indexActuel = 0;
-            } else if (selection.type === "param") {
-                // Entre en mode édition de valeur
-                modeEdition = true;
-            }
-            mettreAjourEcran();
-        }
-
-        function actionEsc() {
-            if (modeEdition) {
-                // Annule la modification (pour l'instant, on sort juste de l'édition)
-                modeEdition = false;
-            } else if (cheminActuel.length > 1) {
-                // Remonte d'un dossier dans le menu
-                cheminActuel.pop();
-                indexActuel = 0; // Remet à zéro pour simplifier
-            } else {
-                ecran.innerText = "rdy"; // Retour à l'écran de base
-                return;
-            }
-            mettreAjourEcran();
-        }
-
-        // Initialisation de l'affichage au démarrage
-        setTimeout(() => mettreAjourEcran(), 1500); // Laisse "rdy" affiché 1.5s
-    </script>
 </body>
 </html>
