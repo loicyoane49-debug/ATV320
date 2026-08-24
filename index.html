@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Simulateur ATV320 - Bornier Avancé & Bus Modbus/CiA402</title>
+    <title>Simulateur Procédural ATV320 - Moteur & Audio Réalistes</title>
     <style>
         body {
             background-color: #1e1e24;
@@ -16,161 +16,76 @@
             padding: 20px;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             user-select: none;
-            -webkit-user-select: none;
             box-sizing: border-box;
         }
 
-        .plateforme {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-            max-width: 1250px;
-            width: 100%;
-        }
+        .plateforme { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 1250px; width: 100%; }
 
-        /* VARIATEUR ATV320 */
-        .variateur {
-            background-color: #2b2b2b;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-            width: 310px;
-            border: 2px solid #444;
-        }
+        /* VARIATEUR */
+        .variateur { background-color: #2b2b2b; padding: 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); width: 310px; border: 2px solid #444; }
         .ecran {
-            background-color: #1a0000;
-            color: #ff2a2a;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 38px;
-            font-weight: bold;
-            text-align: right;
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.9);
-            letter-spacing: 2px;
-            height: 45px;
-            line-height: 45px;
+            background-color: #1a0000; color: #ff2a2a; font-family: 'Courier New', Courier, monospace;
+            font-size: 38px; font-weight: bold; text-align: right; padding: 15px; border-radius: 6px;
+            margin-bottom: 20px; box-shadow: inset 0 0 10px rgba(0,0,0,0.9); letter-spacing: 2px; height: 45px; line-height: 45px;
         }
         .clignotement { animation: clignoterLed 0.25s infinite alternate; }
         @keyframes clignoterLed { from { opacity: 1; } to { opacity: 0.1; } }
         
         .controles { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        button.btn-atv {
-            background-color: #444;
-            color: white;
-            border: none;
-            padding: 15px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            box-shadow: 0 4px #1a1a1a;
-            touch-action: manipulation;
-        }
+        button.btn-atv { background-color: #444; color: white; border: none; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; box-shadow: 0 4px #1a1a1a; }
         button.btn-atv:active { box-shadow: 0 0px #1a1a1a; transform: translateY(4px); }
         .btn-esc { background-color: #a71d2a !important; }
         .btn-ent { background-color: #1e7e34 !important; }
+        .btn-run { background-color: #28a745 !important; grid-column: span 1; }
+        .btn-stop { background-color: #dc3545 !important; grid-column: span 1; }
         .molette { grid-column: span 2; display: flex; justify-content: space-between; }
         .molette button { width: 48%; }
 
-        /* BORNIER DE COMMANDE ETENDU (4 ENTRÉES) */
-        .bornier {
-            margin-top: 15px;
-            background: #202020;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #3a3a3a;
-        }
+        .bornier { margin-top: 15px; background: #202020; padding: 12px; border-radius: 8px; border: 1px solid #3a3a3a; }
         .bornier-title { font-size: 12px; color: #aaa; margin-bottom: 8px; text-align: center; }
         .interrupteurs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .switch-container { text-align: center; font-size: 11px; background: #181818; padding: 6px; border-radius: 4px; }
-        .switch-btn {
-            background: #555;
-            color: white;
-            border: none;
-            padding: 6px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 4px;
-            font-weight: bold;
-            width: 100%;
-        }
+        .switch-btn { background: #555; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin-top: 4px; font-weight: bold; width: 100%; }
         .switch-btn.active { background: #007bff; }
 
-        /* MOTEUR VIRTUEL & OSCILLOSCOPE */
-        .panneau-moteur {
-            background-color: #2b2b2b;
-            padding: 20px;
-            border-radius: 12px;
-            width: 310px;
-            border: 2px solid #444;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-        }
+        /* MOTEUR & DIAGNOSTIC */
+        .panneau-moteur { background-color: #2b2b2b; padding: 20px; border-radius: 12px; width: 310px; border: 2px solid #444; display: flex; flex-direction: column; align-items: center; gap: 12px; }
         .moteur-svg { width: 100px; height: 100px; }
         .rotor { transform-origin: center; }
 
-        .cadre-oscillo {
-            background: #111;
-            border: 1px solid #444;
-            border-radius: 6px;
-            padding: 8px;
-            width: 100%;
-            box-sizing: border-box;
-            text-align: center;
-        }
+        .cadre-oscillo { background: #111; border: 1px solid #444; border-radius: 6px; padding: 8px; width: 100%; box-sizing: border-box; text-align: center; }
         .titre-oscillo { font-size: 11px; color: #aaa; margin-bottom: 4px; display: flex; justify-content: space-between; }
-        canvas { background: #050505; border: 1px solid #222; border-radius: 4px; width: 100%; height: 100px; }
+        canvas { background: #050505; border: 1px solid #222; border-radius: 4px; width: 100%; height: 90px; }
 
-        .btn-audio {
-            background: #6f42c1;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            font-size: 11px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-        }
+        .btn-audio { background: #6f42c1; color: white; border: none; padding: 8px 12px; font-size: 11px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; }
         .btn-audio.actif { background: #28a745; }
 
-        /* PANNEAU DROITE : REGISTRES BUS & TP */
+        /* CHECKLIST PROCEDURE */
+        .checklist-box { background: #181818; border: 1px solid #333; padding: 10px; border-radius: 6px; width: 100%; box-sizing: border-box; font-size: 11px; }
+        .check-item { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .check-ok { color: #00ffcc; font-weight: bold; }
+        .check-nok { color: #ff4444; }
+
+        /* PANNEAU DROITE */
         .panneau-droite { display: flex; flex-direction: column; gap: 15px; width: 380px; }
         .carte { background: #2b2b2b; padding: 15px; border-radius: 12px; border: 2px solid #444; }
         .carte h3 { margin-top: 0; font-size: 15px; color: #00ffcc; border-bottom: 1px solid #444; padding-bottom: 8px; }
         
-        /* MONITEUR BUS DE TERRAIN MODBUS / CiA402 */
         .registre-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
         .registre-box { background: #111; padding: 8px; border-radius: 6px; border: 1px solid #333; text-align: center; }
-        .registre-valeur { font-family: monospace; font-size: 16px; color: #ffcc00; font-weight: bold; margin-top: 2px; }
-        .bits-list { font-size: 11px; font-family: monospace; display: flex; flex-direction: column; gap: 3px; background: #181818; padding: 8px; border-radius: 6px; }
-        .bit-item { display: flex; justify-content: space-between; }
-        .bit-on { color: #00ffcc; font-weight: bold; }
-        .bit-off { color: #555; }
+        .registre-valeur { font-family: monospace; font-size: 16px; color: #ffcc00; font-weight: bold; }
 
         .champs-etudiant { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
         .input-etudiant { background: #111; border: 1px solid #555; color: white; padding: 8px; border-radius: 4px; width: 100%; box-sizing: border-box; font-size: 12px; }
         .select-tp { width: 100%; background: #111; color: #00ffcc; border: 1px solid #555; padding: 8px; border-radius: 4px; font-weight: bold; margin-bottom: 10px; }
         .consigne-box { background: #1a1a1a; padding: 10px; border-radius: 6px; font-size: 12px; margin-bottom: 10px; line-height: 1.4; }
-        
-        .groupe-boutons-eval { display: flex; gap: 10px; }
-        .btn-eval { background: #28a745; color: white; border: none; padding: 10px; flex: 1; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .btn-export { background: #007bff; color: white; border: none; padding: 10px; flex: 1; border-radius: 6px; font-weight: bold; cursor: pointer; display: none; }
+        .btn-eval { background: #28a745; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; }
         .resultat-eval { margin-top: 10px; font-size: 12px; padding: 8px; border-radius: 4px; display: none; }
-
-        .grid-defauts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .btn-defaut { background: #dc3545; color: white; border: none; padding: 8px; font-size: 11px; border-radius: 4px; cursor: pointer; }
-        .btn-reset { background: #17a2b8; color: white; border: none; padding: 8px; font-size: 11px; border-radius: 4px; cursor: pointer; grid-column: span 2; }
     </style>
 </head>
 <body>
 
-<h2 style="margin-bottom: 20px; text-align: center;">Simulateur Pédagogique Altivar ATV320</h2>
+<h2 style="margin-bottom: 20px; text-align: center;">Simulateur Procédural ATV320</h2>
 
 <div class="plateforme">
 
@@ -185,35 +100,24 @@
                 <button class="btn-atv" id="btn-haut">▲</button>
                 <button class="btn-atv" id="btn-bas">▼</button>
             </div>
+            <button class="btn-atv btn-run" onclick="actionRunHMI()">RUN</button>
+            <button class="btn-atv btn-stop" onclick="actionStopHMI()">STOP</button>
         </div>
 
-        <!-- BORNIER 4 ENTRÉES -->
         <div class="bornier">
             <div class="bornier-title">Bornier de Commande (DI1-DI4)</div>
             <div class="interrupteurs">
-                <div class="switch-container">
-                    <div>DI1 (FWD)</div>
-                    <button class="switch-btn" id="sw-di1" onclick="basculerDI(1)">OFF</button>
-                </div>
-                <div class="switch-container">
-                    <div>DI2 (REV)</div>
-                    <button class="switch-btn" id="sw-di2" onclick="basculerDI(2)">OFF</button>
-                </div>
-                <div class="switch-container">
-                    <div>DI3 (PS2)</div>
-                    <button class="switch-btn" id="sw-di3" onclick="basculerDI(3)">OFF</button>
-                </div>
-                <div class="switch-container">
-                    <div>DI4 (PS4)</div>
-                    <button class="switch-btn" id="sw-di4" onclick="basculerDI(4)">OFF</button>
-                </div>
+                <div class="switch-container"><div>DI1 (FWD)</div><button class="switch-btn" id="sw-di1" onclick="basculerDI(1)">OFF</button></div>
+                <div class="switch-container"><div>DI2 (REV)</div><button class="switch-btn" id="sw-di2" onclick="basculerDI(2)">OFF</button></div>
+                <div class="switch-container"><div>DI3 (PS2)</div><button class="switch-btn" id="sw-di3" onclick="basculerDI(3)">OFF</button></div>
+                <div class="switch-container"><div>DI4 (PS4)</div><button class="switch-btn" id="sw-di4" onclick="basculerDI(4)">OFF</button></div>
             </div>
         </div>
     </div>
 
-    <!-- MOTEUR & OSCILLOSCOPE -->
+    <!-- PANNEAU MOTEUR & VERIFICATION PROCEDURE -->
     <div class="panneau-moteur">
-        <h3 style="margin: 0; font-size: 15px;">Moteur & Oscilloscope</h3>
+        <h3 style="margin: 0; font-size: 15px;">Moteur Asynchrone</h3>
         
         <svg class="moteur-svg" viewBox="0 0 100 100">
             <circle cx="50" cy="50" r="45" fill="#3a3a3a" stroke="#666" stroke-width="4"/>
@@ -225,83 +129,58 @@
             </g>
         </svg>
 
-        <button class="btn-audio" id="btn-audio" onclick="basculerAudio()">🔊 Activer Son MLI Moteur</button>
+        <button class="btn-audio" id="btn-audio" onclick="basculerAudio()">🔊 Activer Acoustic MLI Moteur</button>
+
+        <!-- CHECKLIST DES CONDITIONS DE MISE EN MARCHE -->
+        <div class="checklist-box">
+            <div style="font-weight: bold; margin-bottom: 6px; color: #aaa; text-align: center;">Conditions d'Autorisation RUN</div>
+            <div class="check-item"><span>1. Plaque Moteur (drC-)</span><span id="chk-drc" class="check-nok">INCOMPLET</span></div>
+            <div class="check-item"><span>2. Auto-réglage (tUn)</span><span id="chk-tun" class="check-nok">NON FAIT</span></div>
+            <div class="check-item"><span>3. Canal Commande (Cd1)</span><span id="chk-cd1" class="check-ok">tEr</span></div>
+            <div class="check-item"><span>4. Canal Consigne (Fr1)</span><span id="chk-fr1" class="check-ok">PSS</span></div>
+        </div>
 
         <div class="cadre-oscillo">
             <div class="titre-oscillo">
                 <span style="color: #00ffcc;">― Fréquence (Hz)</span>
                 <span style="color: #ffcc00;">― Courant (A)</span>
             </div>
-            <canvas id="oscilloscope" width="280" height="100"></canvas>
+            <canvas id="oscilloscope" width="280" height="90"></canvas>
         </div>
     </div>
 
-    <!-- REGISTRES MODBUS & ÉVALUATION TP -->
+    <!-- PANNEAU ÉVALUATION & REGISTRES -->
     <div class="panneau-droite">
-        
-        <!-- REGISTRES BUS MODBUS / CIA402 -->
         <div class="carte">
             <h3>Bus de Terrain (Modbus / CiA402)</h3>
             <div class="registre-grid">
-                <div class="registre-box">
-                    <span style="font-size: 10px; color: #888;">CMD (8501)</span>
-                    <div class="registre-valeur" id="valeur-cmd">0x0000</div>
-                </div>
-                <div class="registre-box">
-                    <span style="font-size: 10px; color: #888;">ETA (3201)</span>
-                    <div class="registre-valeur" id="valeur-eta">0x0240</div>
-                </div>
-            </div>
-            <div class="bits-list">
-                <div class="bit-item"><span>Bit 0 : Ready to Switch On</span><span id="bit-eta-0" class="bit-off">0</span></div>
-                <div class="bit-item"><span>Bit 1 : Switched On</span><span id="bit-eta-1" class="bit-off">0</span></div>
-                <div class="bit-item"><span>Bit 2 : Operation Enabled (RUN)</span><span id="bit-eta-2" class="bit-off">0</span></div>
-                <div class="bit-item"><span>Bit 3 : Fault Active</span><span id="bit-eta-3" class="bit-off">0</span></div>
+                <div class="registre-box"><span style="font-size: 10px; color: #888;">CMD (8501)</span><div class="registre-valeur" id="valeur-cmd">0x0000</div></div>
+                <div class="registre-box"><span style="font-size: 10px; color: #888;">ETA (3201)</span><div class="registre-valeur" id="valeur-eta">0x0240</div></div>
             </div>
         </div>
 
-        <!-- MODULE ÉVALUATION -->
         <div class="carte">
-            <h3>Évaluation TP</h3>
+            <h3>Évaluation Procédurale TP</h3>
             <div class="champs-etudiant">
                 <input type="text" id="nom-etudiant" class="input-etudiant" placeholder="Nom">
                 <input type="text" id="prenom-etudiant" class="input-etudiant" placeholder="Prénom">
             </div>
 
             <select id="select-tp" class="select-tp" onchange="changerTP()">
-                <option value="tp1">TP 1 : Plaque Signalétique Moteur</option>
-                <option value="tp2">TP 2 : Configuration des Rampes</option>
-                <option value="tp3">TP 3 : Limitation de Vitesse (LSP/HSP)</option>
-                <option value="tp4">TP 4 : Vitesses Présélectionnées (SP2/SP3)</option>
+                <option value="tp1">TP 1 : Mise en Service Complète ATV320</option>
             </select>
 
             <div class="consigne-box" id="consigne-tp"></div>
 
-            <div class="groupe-boutons-eval">
-                <button class="btn-eval" onclick="evaluerTP()">Valider</button>
-                <button class="btn-export" id="btn-export" onclick="exporterRapportWord()">Exporter (.doc)</button>
-            </div>
-
+            <button class="btn-eval" onclick="evaluerTP()">Valider la Procédure</button>
             <div id="resultat-tp" class="resultat-eval"></div>
         </div>
-
-        <div class="carte">
-            <h3>Injecteur de Pannes</h3>
-            <div class="grid-defauts">
-                <button class="btn-defaut" onclick="declencherDefaut('OHF')">OHF (Surchauffe)</button>
-                <button class="btn-defaut" onclick="declencherDefaut('OLF')">OLF (Surcharge)</button>
-                <button class="btn-defaut" onclick="declencherDefaut('OSF')">OSF (Surtension)</button>
-                <button class="btn-defaut" onclick="declencherDefaut('InF')">InF (Défaut Interne)</button>
-                <button class="btn-reset" onclick="acquitterDefaut()">Acquitter / Reset</button>
-            </div>
-        </div>
-
     </div>
 
 </div>
 
 <script>
-    // 1. Arborescence des menus ATV320 avec Vitesses Présélectionnées
+    // 1. Structure de menus incluant tUn (Auto-tuning), Cd1 (Canal Commande) et Fr1 (Canal Consigne)
     const menuATV320 = {
         id: "ROOT", type: "menu", enfants: [
             { id: "rEF-", type: "menu", enfants: [] },
@@ -309,9 +188,15 @@
                 { id: "FULL", type: "menu", enfants: [
                     { id: "drC-", type: "menu", enfants: [
                         { id: "bFr", type: "param", valeur: 50.0, pas: 10.0, paramKey: "bFr" },
-                        { id: "UnS", type: "param", valeur: 400.0, pas: 10.0, paramKey: "UnS" },
-                        { id: "nCr", type: "param", valeur: 4.2, pas: 0.1, paramKey: "nCr" },
-                        { id: "FrS", type: "param", valeur: 50.0, pas: 1.0, paramKey: "FrS" }
+                        { id: "UnS", type: "param", valeur: 0.0, pas: 10.0, paramKey: "UnS" },  // Défaut 0 = non réglé
+                        { id: "nCr", type: "param", valeur: 0.0, pas: 0.1, paramKey: "nCr" },  // Défaut 0 = non réglé
+                        { id: "FrS", type: "param", valeur: 50.0, pas: 1.0, paramKey: "FrS" },
+                        { id: "nSP", type: "param", valeur: 1440, pas: 10, paramKey: "nSP" },
+                        { id: "tUn", type: "enum", options: ["nO", "YES", "dOn"], indexOpt: 0, paramKey: "tUn" }
+                    ]},
+                    { id: "CtL-", type: "menu", enfants: [
+                        { id: "Cd1", type: "enum", options: ["tEr", "HMI", "Mdb"], indexOpt: 0, paramKey: "Cd1" },
+                        { id: "Fr1", type: "enum", options: ["PSS", "AIV1", "LCC"], indexOpt: 0, paramKey: "Fr1" }
                     ]},
                     { id: "FUn-", type: "menu", enfants: [
                         { id: "ACC", type: "param", valeur: 3.0, pas: 0.1, paramKey: "ACC" },
@@ -320,8 +205,7 @@
                         { id: "HSP", type: "param", valeur: 50.0, pas: 0.1, paramKey: "HSP" },
                         { id: "PSS-", type: "menu", enfants: [
                             { id: "SP2", type: "param", valeur: 15.0, pas: 1.0, paramKey: "SP2" },
-                            { id: "SP3", type: "param", valeur: 30.0, pas: 1.0, paramKey: "SP3" },
-                            { id: "SP4", type: "param", valeur: 45.0, pas: 1.0, paramKey: "SP4" }
+                            { id: "SP3", type: "param", valeur: 30.0, pas: 1.0, paramKey: "SP3" }
                         ]}
                     ]}
                 ]}
@@ -330,10 +214,11 @@
     };
 
     const banquesTP = {
-        tp1: { titre: "TP 1 : Plaque Signalétique", consignes: "1. UnS : <strong>380 V</strong><br>2. nCr : <strong>5.5 A</strong><br>3. FrS : <strong>50 Hz</strong>", attentes: { UnS: 380.0, nCr: 5.5, FrS: 50.0 } },
-        tp2: { titre: "TP 2 : Rampes de Vitesse", consignes: "1. ACC : <strong>5.0 s</strong><br>2. dEC : <strong>2.5 s</strong>", attentes: { ACC: 5.0, dEC: 2.5 } },
-        tp3: { titre: "TP 3 : Limitation de Vitesse", consignes: "1. LSP : <strong>15.0 Hz</strong><br>2. HSP : <strong>60.0 Hz</strong>", attentes: { LSP: 15.0, HSP: 60.0 } },
-        tp4: { titre: "TP 4 : Vitesses Présélectionnées", consignes: "1. Vitesse 2 (SP2) : <strong>10.0 Hz</strong><br>2. Vitesse 3 (SP3) : <strong>25.0 Hz</strong>", attentes: { SP2: 10.0, SP3: 25.0 } }
+        tp1: { 
+            titre: "TP 1 : Procédure de Mise en Service Complète", 
+            consignes: "1. Renseigner Plaque Moteur : UnS = <strong>400 V</strong>, nCr = <strong>4.2 A</strong><br>2. Exécuter l'Auto-réglage : tUn = <strong>YES</strong> (attendre 'dOn')<br>3. Configurer Commande Bornier : Cd1 = <strong>tEr</strong><br>4. Lancer le moteur via DI1.", 
+            attentes: { UnS: 400.0, nCr: 4.2, tUn: "dOn", Cd1: "tEr" } 
+        }
     };
 
     let cheminActuel = [menuATV320];
@@ -341,8 +226,7 @@
     let modeEdition = false;
     let enValidation = false;
     let defautActif = null;
-    let timerInactivite = null;
-    let dernierRapport = null;
+    let runHMI = false;
 
     let di1 = false, di2 = false, di3 = false, di4 = false;
     let frequenceReelle = 0.0;
@@ -350,29 +234,39 @@
     let angleRotor = 0;
     let sensRotation = 1;
 
-    // Buffer Oscilloscope
-    const canvas = document.getElementById("oscilloscope");
-    const ctx = canvas.getContext("2d");
-    const bufferTaille = 80;
-    let histFrq = new Array(bufferTaille).fill(0);
-    let histCourant = new Array(bufferTaille).fill(0);
-
-    // Audio MLI
-    let audioCtx = null, oscMLI = null, gainMLI = null, audioAutorise = false;
+    // Web Audio API Multi-Oscillateurs
+    let audioCtx = null, oscIGBT = null, oscStator = null, gainMaster = null, audioAutorise = false;
 
     const ecran = document.getElementById("affichage");
+    const canvas = document.getElementById("oscilloscope");
+    const ctx = canvas.getContext("2d");
+    let histFrq = new Array(80).fill(0);
+    let histCourant = new Array(80).fill(0);
 
     function obtenirValeurParam(key) {
         let res = null;
         function chercher(n) {
-            if (n.paramKey === key) res = n.valeur;
+            if (n.paramKey === key) {
+                res = n.type === "enum" ? n.options[n.indexOpt] : n.valeur;
+            }
             if (n.enfants) n.enfants.forEach(chercher);
         }
         chercher(menuATV320);
         return res;
     }
 
-    // 2. Navigation Façade
+    function fixerValeurParam(key, val) {
+        function chercher(n) {
+            if (n.paramKey === key) {
+                if (n.type === "enum") n.indexOpt = n.options.indexOf(val);
+                else n.valeur = val;
+            }
+            if (n.enfants) n.enfants.forEach(chercher);
+        }
+        chercher(menuATV320);
+    }
+
+    // 2. Navigation Façade ATV320
     function mettreAjourEcran() {
         if (defautActif) { ecran.innerText = defautActif; ecran.style.color = "#ff0000"; return; }
         let noeudActuel = cheminActuel[cheminActuel.length - 1];
@@ -381,63 +275,81 @@
             else { ecran.innerText = "rdY"; ecran.style.color = "#ff0000"; }
             return;
         }
+        let item = noeudActuel.enfants[indexActuel];
         if (modeEdition) {
-            ecran.innerText = noeudActuel.enfants[indexActuel].valeur.toFixed(1);
+            if (item.type === "enum") ecran.innerText = item.options[item.indexOpt];
+            else ecran.innerText = item.valeur.toFixed(1);
             ecran.style.color = "#00ff00";
         } else {
-            ecran.innerText = noeudActuel.enfants.length > 0 ? noeudActuel.enfants[indexActuel].id : "----";
+            ecran.innerText = noeudActuel.enfants.length > 0 ? item.id : "----";
             ecran.style.color = "#ff0000";
         }
     }
 
-    function reinitialiserTimeout() {
-        clearTimeout(timerInactivite);
-        timerInactivite = setTimeout(() => {
-            if (!defautActif) { cheminActuel = [menuATV320]; indexActuel = 0; modeEdition = false; mettreAjourEcran(); }
-        }, 15000);
-    }
-
     function actionHaut() {
-        reinitialiserTimeout(); if (enValidation || defautActif) return;
+        if (enValidation || defautActif) return;
         let noeudActuel = cheminActuel[cheminActuel.length - 1];
-        if (modeEdition) { let p = noeudActuel.enfants[indexActuel]; p.valeur = parseFloat((p.valeur + p.pas).toFixed(1)); }
-        else { if (indexActuel < noeudActuel.enfants.length - 1) indexActuel++; }
+        let item = noeudActuel.enfants[indexActuel];
+        if (modeEdition) {
+            if (item.type === "enum") item.indexOpt = (item.indexOpt + 1) % item.options.length;
+            else item.valeur = parseFloat((item.valeur + item.pas).toFixed(1));
+        } else { if (indexActuel < noeudActuel.enfants.length - 1) indexActuel++; }
         mettreAjourEcran();
     }
 
     function actionBas() {
-        reinitialiserTimeout(); if (enValidation || defautActif) return;
+        if (enValidation || defautActif) return;
         let noeudActuel = cheminActuel[cheminActuel.length - 1];
-        if (modeEdition) { let p = noeudActuel.enfants[indexActuel]; if (p.valeur - p.pas >= 0) p.valeur = parseFloat((p.valeur - p.pas).toFixed(1)); }
-        else { if (indexActuel > 0) indexActuel--; }
+        let item = noeudActuel.enfants[indexActuel];
+        if (modeEdition) {
+            if (item.type === "enum") item.indexOpt = (item.indexOpt - 1 + item.options.length) % item.options.length;
+            else { if (item.valeur - item.pas >= 0) item.valeur = parseFloat((item.valeur - item.pas).toFixed(1)); }
+        } else { if (indexActuel > 0) indexActuel--; }
         mettreAjourEcran();
     }
 
     function actionEnt() {
-        reinitialiserTimeout(); if (enValidation || defautActif) return;
+        if (enValidation || defautActif) return;
         let noeudActuel = cheminActuel[cheminActuel.length - 1];
         let selection = noeudActuel.enfants[indexActuel];
+
         if (modeEdition) {
+            // Traitement spécifique pour l'Auto-tuning tUn
+            if (selection.paramKey === "tUn" && selection.options[selection.indexOpt] === "YES") {
+                enValidation = true;
+                ecran.innerText = "tUn";
+                ecran.classList.add("clignotement");
+                setTimeout(() => {
+                    fixerValeurParam("tUn", "dOn");
+                    ecran.classList.remove("clignotement");
+                    modeEdition = false; enValidation = false;
+                    mettreAjourEcran();
+                }, 2000); // Simulation mesure 2s
+                return;
+            }
+
             enValidation = true; ecran.classList.add("clignotement");
-            setTimeout(() => { ecran.classList.remove("clignotement"); modeEdition = false; enValidation = false; mettreAjourEcran(); }, 1200);
+            setTimeout(() => { ecran.classList.remove("clignotement"); modeEdition = false; enValidation = false; mettreAjourEcran(); }, 1000);
         } else if (selection && selection.type === "menu") { cheminActuel.push(selection); indexActuel = 0; mettreAjourEcran(); }
-        else if (selection && selection.type === "param") { modeEdition = true; mettreAjourEcran(); }
+        else if (selection && (selection.type === "param" || selection.type === "enum")) { modeEdition = true; mettreAjourEcran(); }
     }
 
     function actionEsc() {
-        reinitialiserTimeout(); if (enValidation) return;
+        if (enValidation) return;
         if (modeEdition) modeEdition = false;
         else if (cheminActuel.length > 1) { cheminActuel.pop(); indexActuel = 0; }
         else { cheminActuel = [menuATV320]; indexActuel = 0; }
         mettreAjourEcran();
     }
 
-    // 3. Gestion Bornier 4 Entrées
+    function actionRunHMI() { if (obtenirValeurParam("Cd1") === "HMI") runHMI = true; }
+    function actionStopHMI() { runHMI = false; }
+
     function basculerDI(num) {
         if (num === 1) { di1 = !di1; if (di1) di2 = false; }
         else if (num === 2) { di2 = !di2; if (di2) di1 = false; }
-        else if (num === 3) { di3 = !di3; }
-        else if (num === 4) { di4 = !di4; }
+        else if (num === 3) di3 = !di3;
+        else if (num === 4) di4 = !di4;
 
         for (let i = 1; i <= 4; i++) {
             let etat = eval(`di${i}`);
@@ -447,63 +359,70 @@
         }
     }
 
-    // 4. Moteur Physique, Registres Bus & Son
+    // 3. Modèle Moteur & Analyse de la Procédure
     function boucleMoteur() {
+        const uns = obtenirValeurParam("UnS");
+        const ncr = obtenirValeurParam("nCr");
+        const tun = obtenirValeurParam("tUn");
+        const cd1 = obtenirValeurParam("Cd1");
+        const fr1 = obtenirValeurParam("Fr1");
+
         const acc = obtenirValeurParam("ACC") || 3.0;
         const dec = obtenirValeurParam("dEC") || 3.0;
         const hsp = obtenirValeurParam("HSP") || 50.0;
-        const lsp = obtenirValeurParam("LSP") || 0.0;
         const sp2 = obtenirValeurParam("SP2") || 15.0;
-        const sp3 = obtenirValeurParam("SP3") || 30.0;
-        const sp4 = obtenirValeurParam("SP4") || 45.0;
-        const ncr = obtenirValeurParam("nCr") || 4.2;
 
-        // Logique de consigne de vitesse (Vitesses Présélectionnées)
-        let consigneFrq = 0.0;
-        if (!defautActif && (di1 || di2)) {
-            sensRotation = di1 ? 1 : -1;
-            if (!di3 && !di4) consigneFrq = hsp;
-            else if (di3 && !di4) consigneFrq = sp2;
-            else if (!di3 && di4) consigneFrq = sp3;
-            else if (di3 && di4) consigneFrq = sp4;
+        // Validation Procédure
+        const drcValide = uns > 0 && ncr > 0;
+        const tunValide = tun === "dOn";
+
+        document.getElementById("chk-drc").className = drcValide ? "check-ok" : "check-nok";
+        document.getElementById("chk-drc").innerText = drcValide ? "VALIDE" : "INCOMPLET";
+        document.getElementById("chk-tun").className = tunValide ? "check-ok" : "check-nok";
+        document.getElementById("chk-tun").innerText = tunValide ? "EFFECTUÉ" : "NON FAIT";
+        document.getElementById("chk-cd1").innerText = cd1;
+        document.getElementById("chk-fr1").innerText = fr1;
+
+        // Autorisation de démarrage
+        let ordreMarche = false;
+        if (drcValide && tunValide) {
+            if (cd1 === "tEr" && (di1 || di2)) ordreMarche = true;
+            if (cd1 === "HMI" && runHMI) ordreMarche = true;
         }
 
-        const pasTemps = 0.05;
-        let enAcceleration = false;
+        let consigneFrq = 0.0;
+        if (ordreMarche) {
+            sensRotation = (cd1 === "tEr" && di2) ? -1 : 1;
+            if (fr1 === "PSS") consigneFrq = di3 ? sp2 : hsp;
+            else consigneFrq = hsp;
+        }
 
+        const pas = 0.05;
         if (frequenceReelle < consigneFrq) {
-            frequenceReelle += ((hsp - lsp) / acc) * pasTemps;
+            frequenceReelle += (hsp / acc) * pas;
             if (frequenceReelle > consigneFrq) frequenceReelle = consigneFrq;
-            enAcceleration = true;
         } else if (frequenceReelle > consigneFrq) {
-            frequenceReelle -= (hsp / dec) * pasTemps;
+            frequenceReelle -= (hsp / dec) * pas;
             if (frequenceReelle < 0) frequenceReelle = 0;
         }
 
-        if (frequenceReelle > 0.1) {
-            let chargeNominale = ncr * (frequenceReelle / 50.0);
-            courantReel = enAcceleration ? chargeNominale * 1.5 : chargeNominale;
-        } else {
-            courantReel = 0.0;
-        }
+        courantReel = frequenceReelle > 0.1 ? (ncr * (frequenceReelle / 50.0)) : 0.0;
 
         if (frequenceReelle > 0.1) {
             angleRotor += (frequenceReelle / 5) * sensRotation;
             document.getElementById("rotor").setAttribute("transform", `rotate(${angleRotor} 50 50)`);
         }
 
-        // Mise à jour Registres Modbus / CiA402
-        mettreAjourRegistresBus();
+        // Moteur Acoustique Réaliste
+        mettreAjourAudioMoteur();
 
-        // Audio MLI
-        if (audioAutorise && gainMLI) {
-            if (frequenceReelle > 0.1) {
-                oscMLI.frequency.value = 120 + (frequenceReelle * 14);
-                gainMLI.gain.value = 0.03 + (courantReel / 100);
-            } else { gainMLI.gain.value = 0; }
-        }
+        // Affichage Bus Modbus
+        let cmd = ordreMarche ? 0x000F : 0x0000;
+        let eta = frequenceReelle > 0.1 ? 0x0237 : (drcValide && tunValide ? 0x0240 : 0x0208);
+        document.getElementById("valeur-cmd").innerText = "0x" + cmd.toString(16).padStart(4, '0').toUpperCase();
+        document.getElementById("valeur-eta").innerText = "0x" + eta.toString(16).padStart(4, '0').toUpperCase();
 
-        // Graphique Oscilloscope
+        // Oscilloscope
         histFrq.push(frequenceReelle); histFrq.shift();
         histCourant.push(courantReel); histCourant.shift();
         dessinerOscilloscope();
@@ -513,46 +432,57 @@
         setTimeout(boucleMoteur, 50);
     }
 
-    function mettreAjourRegistresBus() {
-        let cmd = 0x0000;
-        let eta = 0x0240; // Defaut : Switch On Disabled (rdY)
+    // 4. Moteur Audio Web Audio API Réaliste (Inverter + Stator Noise)
+    function initialiserAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-        if (di1 || di2) cmd = 0x000F; // Ordre de marche RUN (Enable Operation)
+            // Source 1 : Sifflement de découpage IGBT MLI (4000 Hz)
+            oscIGBT = audioCtx.createOscillator();
+            oscIGBT.type = 'sine';
+            oscIGBT.frequency.value = 4000; // SFr ATV320 = 4kHz
 
-        if (defautActif) {
-            eta = 0x0208; // Fault Active
-        } else if (frequenceReelle > 0.1) {
-            eta = 0x0237; // Operation Enabled (Moteur tourne)
-        } else {
-            eta = 0x0240; // Ready to Switch On
+            // Source 2 : Bourdonnement Électromagnétique Stator (0-50 Hz)
+            oscStator = audioCtx.createOscillator();
+            oscStator.type = 'sawtooth';
+            oscStator.frequency.value = 5;
+
+            gainMaster = audioCtx.createGain();
+            gainMaster.gain.value = 0;
+
+            oscIGBT.connect(gainMaster);
+            oscStator.connect(gainMaster);
+            gainMaster.connect(audioCtx.destination);
+
+            oscIGBT.start();
+            oscStator.start();
         }
-
-        document.getElementById("valeur-cmd").innerText = "0x" + cmd.toString(16).padStart(4, '0').toUpperCase();
-        document.getElementById("valeur-eta").innerText = "0x" + eta.toString(16).padStart(4, '0').toUpperCase();
-
-        // Mise à jour des LEDs logiques de bits ETA
-        let b0 = (eta & 0x0001) > 0;
-        let b1 = (eta & 0x0002) > 0;
-        let b2 = (eta & 0x0004) > 0;
-        let b3 = (eta & 0x0008) > 0;
-
-        majBitUI("bit-eta-0", b0);
-        majBitUI("bit-eta-1", b1);
-        majBitUI("bit-eta-2", b2);
-        majBitUI("bit-eta-3", b3);
+        if (audioCtx.state === 'suspended') audioCtx.resume();
     }
 
-    function majBitUI(id, actif) {
-        const el = document.getElementById(id);
-        el.className = actif ? "bit-on" : "bit-off";
-        el.innerText = actif ? "1 (OUI)" : "0 (NON)";
+    function mettreAjourAudioMoteur() {
+        if (audioAutorise && gainMaster) {
+            if (frequenceReelle > 0.1) {
+                // Le bourdonnement stator suit la fréquence réelle du champ tournant
+                oscStator.frequency.value = Math.max(frequenceReelle, 2);
+                
+                // Volume proportionnel à la charge et à la vitesse
+                gainMaster.gain.value = 0.02 + (courantReel / 200);
+            } else {
+                gainMaster.gain.value = 0;
+            }
+        }
+    }
+
+    function basculerAudio() {
+        audioAutorise = !audioAutorise;
+        const btn = document.getElementById("btn-audio");
+        if (audioAutorise) { initialiserAudio(); btn.className = "btn-audio actif"; btn.innerText = "🔊 Son MLI Actif"; }
+        else { if (gainMaster) gainMaster.gain.value = 0; btn.className = "btn-audio"; btn.innerText = "🔇 Activer Acoustic MLI Moteur"; }
     }
 
     function dessinerOscilloscope() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.strokeStyle = "#222"; ctx.lineWidth = 1; ctx.beginPath();
-        ctx.moveTo(0, canvas.height/2); ctx.lineTo(canvas.width, canvas.height/2); ctx.stroke();
-
         ctx.strokeStyle = "#00ffcc"; ctx.lineWidth = 2; ctx.beginPath();
         for (let i = 0; i < histFrq.length; i++) {
             let x = (i / (histFrq.length - 1)) * canvas.width;
@@ -570,30 +500,9 @@
         ctx.stroke();
     }
 
-    function initialiserAudio() {
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            oscMLI = audioCtx.createOscillator(); gainMLI = audioCtx.createGain();
-            oscMLI.type = 'sawtooth'; oscMLI.frequency.value = 100; gainMLI.gain.value = 0;
-            oscMLI.connect(gainMLI); gainMLI.connect(audioCtx.destination); oscMLI.start();
-        }
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-    }
-
-    function basculerAudio() {
-        audioAutorise = !audioAutorise;
-        const btn = document.getElementById("btn-audio");
-        if (audioAutorise) { initialiserAudio(); btn.className = "btn-audio actif"; btn.innerText = "🔊 Son MLI Actif"; }
-        else { if (gainMLI) gainMLI.gain.value = 0; btn.className = "btn-audio"; btn.innerText = "🔇 Activer Son MLI Moteur"; }
-    }
-
-    // 5. Gestion des TP & Exportation
     function changerTP() {
-        const cle = document.getElementById("select-tp").value;
-        const tp = banquesTP[cle];
+        const tp = banquesTP["tp1"];
         document.getElementById("consigne-tp").innerHTML = `<strong>${tp.titre}</strong><br>${tp.consignes}`;
-        document.getElementById("resultat-tp").style.display = "none";
-        document.getElementById("btn-export").style.display = "none";
     }
 
     function evaluerTP() {
@@ -601,86 +510,28 @@
         const prenom = document.getElementById("prenom-etudiant").value.trim();
         if (!nom || !prenom) { alert("Saisissez le nom et prénom."); return; }
 
-        const cle = document.getElementById("select-tp").value;
-        const tp = banquesTP[cle];
+        const tp = banquesTP["tp1"];
         let points = 0, total = Object.keys(tp.attentes).length, details = [];
 
         for (let param in tp.attentes) {
             let valAct = obtenirValeurParam(param);
             if (valAct === tp.attentes[param]) {
-                points++; details.push({ param: param, attendu: tp.attentes[param], obtenu: valAct, statut: "OK" });
+                points++; details.push(`✅ <strong>${param}</strong> : ${valAct}`);
             } else {
-                details.push({ param: param, attendu: tp.attentes[param], obtenu: valAct, statut: "ERREUR" });
+                details.push(`❌ <strong>${param}</strong> : ${valAct} (Attendu: ${tp.attentes[param]})`);
             }
         }
 
         const note = Math.round((points / total) * 20);
-        dernierRapport = {
-            nom: nom, prenom: prenom, tpTitre: tp.titre, note: note, details: details,
-            date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-        };
-
         const box = document.getElementById("resultat-tp");
         box.style.display = "block";
         box.style.background = note >= 10 ? "#1e4620" : "#5c1d24";
-        box.innerHTML = `<strong>Note : ${note} / 20</strong><br>` + 
-            details.map(d => d.statut === "OK" ? `✅ <strong>${d.param}</strong> : ${d.obtenu}` : `❌ <strong>${d.param}</strong> : ${d.obtenu} (Attendu: ${d.attendu})`).join("<br>");
-
-        document.getElementById("btn-export").style.display = "inline-block";
-    }
-
-    function exporterRapportWord() {
-        if (!dernierRapport) return;
-        const contenuHtml = `
-            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-            <head><meta charset='utf-8'><title>Rapport d'Évaluation</title>
-            <style>body { font-family: Arial, sans-serif; padding: 20px; } table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #ddd; padding: 8px; } th { background-color: #f2f2f2; }</style>
-            </head>
-            <body>
-                <h2>Compte-Rendu d'Évaluation - ATV320</h2>
-                <p><strong>Étudiant :</strong> ${dernierRapport.nom} ${dernierRapport.prenom}</p>
-                <p><strong>Date :</strong> ${dernierRapport.date}</p>
-                <p><strong>Épreuve :</strong> ${dernierRapport.tpTitre}</p>
-                <hr><h3>Note : ${dernierRapport.note} / 20</h3>
-                <table>
-                    <thead><tr><th>Paramètre</th><th>Attendu</th><th>Obtenu</th><th>Statut</th></tr></thead>
-                    <tbody>
-                        ${dernierRapport.details.map(d => `<tr><td><b>${d.param}</b></td><td>${d.attendu}</td><td>${d.obtenu}</td><td>${d.statut}</td></tr>`).join('')}
-                    </tbody>
-                </table>
-            </body></html>`;
-        const blob = new Blob(['\ufeff' + contenuHtml], { type: 'application/msword' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url;
-        a.download = `Rapport_${dernierRapport.nom}_${dernierRapport.prenom}.doc`;
-        document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-    }
-
-    function declencherDefaut(code) { defautActif = code; ecran.classList.add("clignotement"); di1 = false; di2 = false; basculerDI(0); mettreAjourEcran(); }
-    function acquitterDefaut() { ecran.classList.remove("clignotement"); defautActif = null; mettreAjourEcran(); reinitialiserTimeout(); }
-
-    function configurerAppuiLong(elementId, action) {
-        const btn = document.getElementById(elementId);
-        let timerInitial, intervalRapide;
-        const demarrer = (e) => {
-            if (e.cancelable) e.preventDefault();
-            action();
-            timerInitial = setTimeout(() => { intervalRapide = setInterval(action, 100); }, 400);
-        };
-        const arreter = () => { clearTimeout(timerInitial); clearInterval(intervalRapide); };
-        btn.addEventListener('touchstart', demarrer, { passive: false });
-        btn.addEventListener('touchend', arreter);
-        btn.addEventListener('touchcancel', arreter);
-        btn.addEventListener('mousedown', demarrer);
-        btn.addEventListener('mouseup', arreter);
-        btn.addEventListener('mouseleave', arreter);
+        box.innerHTML = `<strong>Note : ${note} / 20</strong><br>` + details.join("<br>");
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        configurerAppuiLong('btn-haut', actionHaut);
-        configurerAppuiLong('btn-bas', actionBas);
         changerTP();
-        reinitialiserTimeout();
+        mettreAjourEcran();
         boucleMoteur();
     });
 </script>
