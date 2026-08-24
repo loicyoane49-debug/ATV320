@@ -80,7 +80,25 @@
         .select-tp { width: 100%; background: #111; color: #00ffcc; border: 1px solid #555; padding: 8px; border-radius: 4px; font-weight: bold; margin-bottom: 10px; }
         .consigne-box { background: #1a1a1a; padding: 10px; border-radius: 6px; font-size: 12px; margin-bottom: 10px; line-height: 1.4; }
         .btn-eval { background: #28a745; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-doc { background: #17a2b8; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .resultat-eval { margin-top: 10px; font-size: 12px; padding: 8px; border-radius: 4px; display: none; }
+
+        /* MODALE DOCUMENTATION TECHNIQUE */
+        .modal-doc {
+            display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.85); justify-content: center; align-items: center;
+        }
+        .modal-contenu {
+            background-color: #222; width: 90%; height: 90%; border-radius: 8px; display: flex;
+            flex-direction: column; overflow: hidden; border: 1px solid #555; box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        }
+        .modal-entete {
+            background-color: #111; padding: 10px 15px; display: flex; justify-content: space-between;
+            align-items: center; border-bottom: 1px solid #333;
+        }
+        .modal-entete h3 { margin: 0; font-size: 14px; color: #00ffcc; }
+        .btn-fermer-modal { background-color: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .iframe-pdf { width: 100%; height: 100%; border: none; background: #333; }
     </style>
 </head>
 <body>
@@ -160,7 +178,7 @@
         </div>
 
         <div class="carte">
-            <h3>Évaluation Procédural TP</h3>
+            <h3>Évaluation Procédurale TP</h3>
             <div class="champs-etudiant">
                 <input type="text" id="nom-etudiant" class="input-etudiant" placeholder="Nom">
                 <input type="text" id="prenom-etudiant" class="input-etudiant" placeholder="Prénom">
@@ -182,10 +200,23 @@
             <div class="consigne-box" id="consigne-tp"></div>
 
             <button class="btn-eval" onclick="evaluerTP()">Valider la Procédure</button>
+            <button class="btn-doc" onclick="ouvrirDoc()">📄 Documentation Technique ATV320</button>
             <div id="resultat-tp" class="resultat-eval"></div>
         </div>
     </div>
 
+</div>
+
+<!-- FENÊTRE MODALE VISUELLE DU DOCUMENT TECHNIQUE -->
+<div id="modal-doc" class="modal-doc">
+    <div class="modal-contenu">
+        <div class="modal-entete">
+            <h3>Documentation Technique Schneider Electric - Altivar ATV320 (NVE41296)</h3>
+            <button class="btn-fermer-modal" onclick="fermerDoc()">✖ Fermer</button>
+        </div>
+        <!-- Remplacez le lien src ci-dessous par 'doc_atv320.pdf' si vous stockez le fichier PDF en local -->
+        <iframe class="iframe-pdf" src="https://www.se.com/fr/fr/download/doc/NVE41296/"></iframe>
+    </div>
 </div>
 
 <script>
@@ -480,7 +511,6 @@
         if (ordreMarche) {
             sensRotation = (cd1 === "tEr" && di2) ? -1 : 1;
             
-            // Logique combinatoire des vitesses pré-sélectionnées (PSS)
             if (fr1 === "PSS") {
                 if (di3 && di4) consigneFrq = Math.min(hsp, sp2 + sp3);
                 else if (di4) consigneFrq = sp3;
@@ -490,11 +520,9 @@
                 consigneFrq = hsp;
             }
 
-            // Application du seuil Petite Vitesse (LSP)
             consigneFrq = Math.max(consigneFrq, lsp);
         }
 
-        // Calcul des rampes de fréquence (50ms tick = 0.05s)
         const pas = 0.05;
         if (frequenceReelle < consigneFrq) {
             frequenceReelle += (hsp / Math.max(acc, 0.1)) * pas;
@@ -504,10 +532,8 @@
             if (frequenceReelle < 0) frequenceReelle = 0;
         }
 
-        // Estimation du courant absorbé (Loi U/f)
         courantReel = frequenceReelle > 0.1 ? (ncr * (0.2 + 0.8 * (frequenceReelle / 50.0))) : 0.0;
 
-        // Rotation visuelle du rotor
         if (frequenceReelle > 0.1) {
             angleRotor += (frequenceReelle / 5) * sensRotation;
             document.getElementById("rotor").setAttribute("transform", `rotate(${angleRotor} 50 50)`);
@@ -515,7 +541,6 @@
 
         mettreAjourAudioMoteur();
 
-        // Mise à jour des registres CiA402 / Modbus
         let cmd = ordreMarche ? 0x000F : 0x0000;
         let eta = frequenceReelle > 0.1 ? 0x0237 : (drcValide && tunValide ? 0x0240 : 0x0208);
         document.getElementById("valeur-cmd").innerText = "0x" + cmd.toString(16).padStart(4, '0').toUpperCase();
@@ -579,7 +604,6 @@
     function dessinerOscilloscope() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // Courbe de Fréquence (Vert d'eau)
         ctx.strokeStyle = "#00ffcc"; ctx.lineWidth = 2; ctx.beginPath();
         for (let i = 0; i < histFrq.length; i++) {
             let x = (i / (histFrq.length - 1)) * canvas.width;
@@ -588,7 +612,6 @@
         }
         ctx.stroke();
 
-        // Courbe de Courant (Jaune)
         ctx.strokeStyle = "#ffcc00"; ctx.lineWidth = 1.5; ctx.beginPath();
         for (let i = 0; i < histCourant.length; i++) {
             let x = (i / (histCourant.length - 1)) * canvas.width;
@@ -631,6 +654,15 @@
         box.style.display = "block";
         box.style.background = note >= 10 ? "#1e4620" : "#5c1d24";
         box.innerHTML = `<strong>${prenom} ${nom} - Note : ${note} / 20</strong><br>` + details.join("<br>");
+    }
+
+    // 7. Navigation Modal Documentation Technique
+    function ouvrirDoc() {
+        document.getElementById("modal-doc").style.display = "flex";
+    }
+
+    function fermerDoc() {
+        document.getElementById("modal-doc").style.display = "none";
     }
 
     document.addEventListener('DOMContentLoaded', () => {
