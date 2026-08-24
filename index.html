@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Simulateur ATV320 - Plateforme d'Évaluation</title>
+    <title>Simulateur ATV320 - Oscilloscope & Son MLI</title>
     <style>
         body {
             background-color: #1e1e24;
@@ -25,7 +25,7 @@
             flex-wrap: wrap;
             gap: 20px;
             justify-content: center;
-            max-width: 1150px;
+            max-width: 1200px;
             width: 100%;
         }
 
@@ -53,18 +53,10 @@
             height: 45px;
             line-height: 45px;
         }
-        .clignotement {
-            animation: clignoterLed 0.25s infinite alternate;
-        }
-        @keyframes clignoterLed {
-            from { opacity: 1; }
-            to { opacity: 0.1; }
-        }
-        .controles {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
+        .clignotement { animation: clignoterLed 0.25s infinite alternate; }
+        @keyframes clignoterLed { from { opacity: 1; } to { opacity: 0.1; } }
+        
+        .controles { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         button.btn-atv {
             background-color: #444;
             color: white;
@@ -77,17 +69,10 @@
             box-shadow: 0 4px #1a1a1a;
             touch-action: manipulation;
         }
-        button.btn-atv:active {
-            box-shadow: 0 0px #1a1a1a;
-            transform: translateY(4px);
-        }
+        button.btn-atv:active { box-shadow: 0 0px #1a1a1a; transform: translateY(4px); }
         .btn-esc { background-color: #a71d2a !important; }
         .btn-ent { background-color: #1e7e34 !important; }
-        .molette {
-            grid-column: span 2;
-            display: flex;
-            justify-content: space-between;
-        }
+        .molette { grid-column: span 2; display: flex; justify-content: space-between; }
         .molette button { width: 48%; }
 
         /* BORNIER DE COMMANDE */
@@ -113,86 +98,59 @@
         }
         .switch-btn.active { background: #007bff; }
 
-        /* MOTEUR VIRTUEL */
+        /* MOTEUR VIRTUEL & OSCILLOSCOPE */
         .panneau-moteur {
             background-color: #2b2b2b;
             padding: 20px;
             border-radius: 12px;
-            width: 260px;
+            width: 320px;
             border: 2px solid #444;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: space-between;
+            gap: 12px;
         }
-        .moteur-svg {
-            width: 130px;
-            height: 130px;
-            margin: 15px 0;
-        }
+        .moteur-svg { width: 110px; height: 110px; }
         .rotor { transform-origin: center; }
-        .jauge-frequence {
-            width: 100%;
+
+        .cadre-oscillo {
             background: #111;
+            border: 1px solid #444;
             border-radius: 6px;
-            padding: 10px;
+            padding: 8px;
+            width: 100%;
             box-sizing: border-box;
             text-align: center;
         }
-        .valeur-frequence { font-size: 22px; color: #00ffcc; font-family: monospace; font-weight: bold; }
+        .titre-oscillo { font-size: 11px; color: #aaa; margin-bottom: 4px; display: flex; justify-content: space-between; }
+        canvas { background: #050505; border: 1px solid #222; border-radius: 4px; width: 100%; height: 110px; }
 
-        /* MODULE TP & FORMATEUR */
-        .panneau-droite {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            width: 380px;
+        .btn-audio {
+            background: #6f42c1;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            font-size: 11px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
         }
-        .carte {
-            background: #2b2b2b;
-            padding: 15px;
-            border-radius: 12px;
-            border: 2px solid #444;
-        }
+        .btn-audio.actif { background: #28a745; }
+
+        /* MODULE TP & RAPPORTS */
+        .panneau-droite { display: flex; flex-direction: column; gap: 15px; width: 360px; }
+        .carte { background: #2b2b2b; padding: 15px; border-radius: 12px; border: 2px solid #444; }
         .carte h3 { margin-top: 0; font-size: 16px; color: #00ffcc; border-bottom: 1px solid #444; padding-bottom: 8px; }
         
-        .champs-etudiant {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-        .input-etudiant {
-            background: #111;
-            border: 1px solid #555;
-            color: white;
-            padding: 8px;
-            border-radius: 4px;
-            width: 100%;
-            box-sizing: border-box;
-            font-size: 13px;
-        }
-
-        .select-tp {
-            width: 100%;
-            background: #111;
-            color: #00ffcc;
-            border: 1px solid #555;
-            padding: 8px;
-            border-radius: 4px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
+        .champs-etudiant { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+        .input-etudiant { background: #111; border: 1px solid #555; color: white; padding: 8px; border-radius: 4px; width: 100%; box-sizing: border-box; font-size: 13px; }
+        .select-tp { width: 100%; background: #111; color: #00ffcc; border: 1px solid #555; padding: 8px; border-radius: 4px; font-weight: bold; margin-bottom: 10px; }
         .consigne-box { background: #1a1a1a; padding: 10px; border-radius: 6px; font-size: 13px; margin-bottom: 10px; line-height: 1.4; }
         
-        .groupe-boutons-eval {
-            display: flex;
-            gap: 10px;
-        }
+        .groupe-boutons-eval { display: flex; gap: 10px; }
         .btn-eval { background: #28a745; color: white; border: none; padding: 10px; flex: 1; border-radius: 6px; font-weight: bold; cursor: pointer; }
         .btn-export { background: #007bff; color: white; border: none; padding: 10px; flex: 1; border-radius: 6px; font-weight: bold; cursor: pointer; display: none; }
-
         .resultat-eval { margin-top: 10px; font-size: 13px; padding: 8px; border-radius: 4px; display: none; }
 
         .grid-defauts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -206,7 +164,7 @@
 
 <div class="plateforme">
 
-    <!-- BLOC 1 : VARIATEUR ATV320 -->
+    <!-- VARIATEUR ATV320 -->
     <div class="variateur">
         <div class="ecran" id="affichage">rdY</div>
         
@@ -234,9 +192,9 @@
         </div>
     </div>
 
-    <!-- BLOC 2 : MOTEUR VIRTUEL -->
+    <!-- MOTEUR & OSCILLOSCOPE & AUDIO -->
     <div class="panneau-moteur">
-        <h3 style="margin: 0; font-size: 16px;">Moteur Asynchrone</h3>
+        <h3 style="margin: 0; font-size: 15px;">Moteur & Oscilloscope</h3>
         
         <svg class="moteur-svg" viewBox="0 0 100 100">
             <circle cx="50" cy="50" r="45" fill="#3a3a3a" stroke="#666" stroke-width="4"/>
@@ -248,37 +206,38 @@
             </g>
         </svg>
 
-        <div class="jauge-frequence">
-            <span style="font-size: 11px; color: #888;">FRÉQUENCE REELLE</span><br>
-            <span class="valeur-frequence" id="valeur-frequence">0.0 Hz</span>
+        <!-- Module Son MLI -->
+        <button class="btn-audio" id="btn-audio" onclick="basculerAudio()">🔊 Activer Son MLI Moteur</button>
+
+        <!-- Graphique Temps Réel -->
+        <div class="cadre-oscillo">
+            <div class="titre-oscillo">
+                <span style="color: #00ffcc;">― Fréquence (Hz)</span>
+                <span style="color: #ffcc00;">― Courant (A)</span>
+            </div>
+            <canvas id="oscilloscope" width="280" height="110"></canvas>
         </div>
     </div>
 
-    <!-- BLOC 3 : MULTI-SCÉNARIOS & RAPPORTS -->
+    <!-- MODULE TP & DEFFAUTS -->
     <div class="panneau-droite">
-        
         <div class="carte">
-            <h3>Évaluation & Rapport de TP</h3>
-            
+            <h3>Évaluation & Rapport TP</h3>
             <div class="champs-etudiant">
-                <input type="text" id="nom-etudiant" class="input-etudiant" placeholder="Nom de l'étudiant">
+                <input type="text" id="nom-etudiant" class="input-etudiant" placeholder="Nom">
                 <input type="text" id="prenom-etudiant" class="input-etudiant" placeholder="Prénom">
             </div>
 
-            <!-- Étape 3 : Banque de Scénarios -->
             <select id="select-tp" class="select-tp" onchange="changerTP()">
                 <option value="tp1">TP 1 : Plaque Signalétique Moteur</option>
                 <option value="tp2">TP 2 : Configuration des Rampes</option>
                 <option value="tp3">TP 3 : Limitation de Vitesse (LSP/HSP)</option>
             </select>
 
-            <div class="consigne-box" id="consigne-tp">
-                <!-- Chargé dynamiquement via JS -->
-            </div>
+            <div class="consigne-box" id="consigne-tp"></div>
 
             <div class="groupe-boutons-eval">
                 <button class="btn-eval" onclick="evaluerTP()">Valider</button>
-                <!-- Étape 2 : Exportation Word -->
                 <button class="btn-export" id="btn-export" onclick="exporterRapportWord()">Exporter (.doc)</button>
             </div>
 
@@ -295,13 +254,12 @@
                 <button class="btn-reset" onclick="acquitterDefaut()">Acquitter / Reset</button>
             </div>
         </div>
-
     </div>
 
 </div>
 
 <script>
-    // 1. Arborescence des menus
+    // 1. Arborescence des menus ATV320
     const menuATV320 = {
         id: "ROOT", type: "menu", enfants: [
             { id: "rEF-", type: "menu", enfants: [] },
@@ -324,81 +282,65 @@
         ]
     };
 
-    // 2. Banque de Scénarios TP
     const banquesTP = {
-        tp1: {
-            titre: "TP 1 : Plaque Signalétique Moteur",
-            consignes: "1. Tension nominale (UnS) : <strong>380 V</strong><br>2. Courant nominal (nCr) : <strong>5.5 A</strong><br>3. Fréquence nominale (FrS) : <strong>50 Hz</strong>",
-            attentes: { UnS: 380.0, nCr: 5.5, FrS: 50.0 }
-        },
-        tp2: {
-            titre: "TP 2 : Configuration des Rampes",
-            consignes: "1. Temps d'accélération (ACC) : <strong>5.0 s</strong><br>2. Temps de décélération (dEC) : <strong>2.5 s</strong>",
-            attentes: { ACC: 5.0, dEC: 2.5 }
-        },
-        tp3: {
-            titre: "TP 3 : Limitation de Vitesse (LSP/HSP)",
-            consignes: "1. Petite Vitesse (LSP) : <strong>15.0 Hz</strong><br>2. Grande Vitesse (HSP) : <strong>60.0 Hz</strong>",
-            attentes: { LSP: 15.0, HSP: 60.0 }
-        }
+        tp1: { titre: "TP 1 : Plaque Signalétique", consignes: "1. UnS : <strong>380 V</strong><br>2. nCr : <strong>5.5 A</strong><br>3. FrS : <strong>50 Hz</strong>", attentes: { UnS: 380.0, nCr: 5.5, FrS: 50.0 } },
+        tp2: { titre: "TP 2 : Rampes de Vitesse", consignes: "1. ACC : <strong>5.0 s</strong><br>2. dEC : <strong>2.5 s</strong>", attentes: { ACC: 5.0, dEC: 2.5 } },
+        tp3: { titre: "TP 3 : Bornes de Vitesse", consignes: "1. LSP : <strong>15.0 Hz</strong><br>2. HSP : <strong>60.0 Hz</strong>", attentes: { LSP: 15.0, HSP: 60.0 } }
     };
 
-    // 3. Variables d'État
     let cheminActuel = [menuATV320];
     let indexActuel = 0;
     let modeEdition = false;
     let enValidation = false;
     let defautActif = null;
     let timerInactivite = null;
-    let dernierRapport = null; // Stocke les données d'évaluation pour l'exportation Word
+    let dernierRapport = null;
 
     let di1 = false; di2 = false;
     let frequenceReelle = 0.0;
+    let courantReel = 0.0;
     let angleRotor = 0;
     let sensRotation = 1;
+
+    // Buffer Oscilloscope
+    const canvas = document.getElementById("oscilloscope");
+    const ctx = canvas.getContext("2d");
+    const bufferTaille = 80;
+    let histFrq = new Array(bufferTaille).fill(0);
+    let histCourant = new Array(bufferTaille).fill(0);
+
+    // Audio MLI / PWM
+    let audioCtx = null;
+    let oscMLI = null;
+    let gainMLI = null;
+    let audioAutorise = false;
 
     const ecran = document.getElementById("affichage");
 
     function obtenirValeurParam(key) {
-        let resultat = null;
-        function chercher(noeud) {
-            if (noeud.paramKey === key) resultat = noeud.valeur;
-            if (noeud.enfants) noeud.enfants.forEach(chercher);
+        let res = null;
+        function chercher(n) {
+            if (n.paramKey === key) res = n.valeur;
+            if (n.enfants) n.enfants.forEach(chercher);
         }
         chercher(menuATV320);
-        return resultat;
+        return res;
     }
 
-    // 4. Moteur de Navigation
+    // 2. Navigation Façade
     function mettreAjourEcran() {
-        if (defautActif) {
-            ecran.innerText = defautActif;
-            ecran.style.color = "#ff0000";
-            return;
-        }
-
+        if (defautActif) { ecran.innerText = defautActif; ecran.style.color = "#ff0000"; return; }
         let noeudActuel = cheminActuel[cheminActuel.length - 1];
-        
         if (cheminActuel.length === 1 && !modeEdition) {
-            if (frequenceReelle > 0.1) {
-                ecran.innerText = frequenceReelle.toFixed(1);
-                ecran.style.color = "#00ffcc";
-            } else {
-                ecran.innerText = "rdY";
-                ecran.style.color = "#ff0000";
-            }
+            if (frequenceReelle > 0.1) { ecran.innerText = frequenceReelle.toFixed(1); ecran.style.color = "#00ffcc"; }
+            else { ecran.innerText = "rdY"; ecran.style.color = "#ff0000"; }
             return;
         }
-
         if (modeEdition) {
             ecran.innerText = noeudActuel.enfants[indexActuel].valeur.toFixed(1);
             ecran.style.color = "#00ff00";
         } else {
-            if (noeudActuel.enfants.length > 0) {
-                ecran.innerText = noeudActuel.enfants[indexActuel].id;
-            } else {
-                ecran.innerText = "----";
-            }
+            ecran.innerText = noeudActuel.enfants.length > 0 ? noeudActuel.enfants[indexActuel].id : "----";
             ecran.style.color = "#ff0000";
         }
     }
@@ -406,84 +348,45 @@
     function reinitialiserTimeout() {
         clearTimeout(timerInactivite);
         timerInactivite = setTimeout(() => {
-            if (!defautActif) {
-                cheminActuel = [menuATV320];
-                indexActuel = 0;
-                modeEdition = false;
-                mettreAjourEcran();
-            }
+            if (!defautActif) { cheminActuel = [menuATV320]; indexActuel = 0; modeEdition = false; mettreAjourEcran(); }
         }, 15000);
     }
 
     function actionHaut() {
-        reinitialiserTimeout();
-        if (enValidation || defautActif) return;
+        reinitialiserTimeout(); if (enValidation || defautActif) return;
         let noeudActuel = cheminActuel[cheminActuel.length - 1];
-        if (modeEdition) {
-            let param = noeudActuel.enfants[indexActuel];
-            param.valeur = parseFloat((param.valeur + param.pas).toFixed(1));
-        } else {
-            if (indexActuel < noeudActuel.enfants.length - 1) indexActuel++;
-        }
+        if (modeEdition) { let p = noeudActuel.enfants[indexActuel]; p.valeur = parseFloat((p.valeur + p.pas).toFixed(1)); }
+        else { if (indexActuel < noeudActuel.enfants.length - 1) indexActuel++; }
         mettreAjourEcran();
     }
 
     function actionBas() {
-        reinitialiserTimeout();
-        if (enValidation || defautActif) return;
+        reinitialiserTimeout(); if (enValidation || defautActif) return;
         let noeudActuel = cheminActuel[cheminActuel.length - 1];
-        if (modeEdition) {
-            let param = noeudActuel.enfants[indexActuel];
-            if (param.valeur - param.pas >= 0) {
-                param.valeur = parseFloat((param.valeur - param.pas).toFixed(1));
-            }
-        } else {
-            if (indexActuel > 0) indexActuel--;
-        }
+        if (modeEdition) { let p = noeudActuel.enfants[indexActuel]; if (p.valeur - p.pas >= 0) p.valeur = parseFloat((p.valeur - p.pas).toFixed(1)); }
+        else { if (indexActuel > 0) indexActuel--; }
         mettreAjourEcran();
     }
 
     function actionEnt() {
-        reinitialiserTimeout();
-        if (enValidation || defautActif) return;
+        reinitialiserTimeout(); if (enValidation || defautActif) return;
         let noeudActuel = cheminActuel[cheminActuel.length - 1];
         let selection = noeudActuel.enfants[indexActuel];
-
         if (modeEdition) {
-            enValidation = true;
-            ecran.classList.add("clignotement");
-            setTimeout(() => {
-                ecran.classList.remove("clignotement");
-                modeEdition = false;
-                enValidation = false;
-                mettreAjourEcran();
-            }, 1200);
-        } else if (selection && selection.type === "menu") {
-            cheminActuel.push(selection);
-            indexActuel = 0;
-            mettreAjourEcran();
-        } else if (selection && selection.type === "param") {
-            modeEdition = true;
-            mettreAjourEcran();
-        }
+            enValidation = true; ecran.classList.add("clignotement");
+            setTimeout(() => { ecran.classList.remove("clignotement"); modeEdition = false; enValidation = false; mettreAjourEcran(); }, 1200);
+        } else if (selection && selection.type === "menu") { cheminActuel.push(selection); indexActuel = 0; mettreAjourEcran(); }
+        else if (selection && selection.type === "param") { modeEdition = true; mettreAjourEcran(); }
     }
 
     function actionEsc() {
-        reinitialiserTimeout();
-        if (enValidation) return;
-        if (modeEdition) {
-            modeEdition = false;
-        } else if (cheminActuel.length > 1) {
-            cheminActuel.pop();
-            indexActuel = 0;
-        } else {
-            cheminActuel = [menuATV320];
-            indexActuel = 0;
-        }
+        reinitialiserTimeout(); if (enValidation) return;
+        if (modeEdition) modeEdition = false;
+        else if (cheminActuel.length > 1) { cheminActuel.pop(); indexActuel = 0; }
+        else { cheminActuel = [menuATV320]; indexActuel = 0; }
         mettreAjourEcran();
     }
 
-    // 5. Commande Bornier & Simulation Moteur
     function basculerDI(num) {
         if (num === 1) { di1 = !di1; if (di1) di2 = false; }
         else if (num === 2) { di2 = !di2; if (di2) di1 = false; }
@@ -493,11 +396,45 @@
         document.getElementById("sw-di2").innerText = di2 ? "ON" : "OFF";
     }
 
+    // 3. Module Web Audio API (Son MLI)
+    function initialiserAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            oscMLI = audioCtx.createOscillator();
+            gainMLI = audioCtx.createGain();
+
+            oscMLI.type = 'sawtooth'; // Harmoniques proches du découpage MLI
+            oscMLI.frequency.value = 100;
+            gainMLI.gain.value = 0;
+
+            oscMLI.connect(gainMLI);
+            gainMLI.connect(audioCtx.destination);
+            oscMLI.start();
+        }
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function basculerAudio() {
+        audioAutorise = !audioAutorise;
+        const btn = document.getElementById("btn-audio");
+        if (audioAutorise) {
+            initialiserAudio();
+            btn.className = "btn-audio actif";
+            btn.innerText = "🔊 Son MLI Actif";
+        } else {
+            if (gainMLI) gainMLI.gain.value = 0;
+            btn.className = "btn-audio";
+            btn.innerText = "🔇 Activer Son MLI Moteur";
+        }
+    }
+
+    // 4. Moteur Physique, Oscilloscope et Synthèse Sonore
     function boucleMoteur() {
         const acc = obtenirValeurParam("ACC") || 3.0;
         const dec = obtenirValeurParam("dEC") || 3.0;
         const hsp = obtenirValeurParam("HSP") || 50.0;
         const lsp = obtenirValeurParam("LSP") || 0.0;
+        const ncr = obtenirValeurParam("nCr") || 4.2;
 
         let consigneFrq = 0.0;
         if (!defautActif) {
@@ -506,26 +443,80 @@
         }
 
         const pasTemps = 0.05;
+        let enAcceleration = false;
+
         if (frequenceReelle < consigneFrq) {
             frequenceReelle += ((hsp - lsp) / acc) * pasTemps;
             if (frequenceReelle > consigneFrq) frequenceReelle = consigneFrq;
+            enAcceleration = true;
         } else if (frequenceReelle > consigneFrq) {
             frequenceReelle -= (hsp / dec) * pasTemps;
             if (frequenceReelle < 0) frequenceReelle = 0;
         }
 
+        // Calcul dynamique du courant absorbé (Loi U/f + pic au démarrage)
+        if (frequenceReelle > 0.1) {
+            let chargeNominale = ncr * (frequenceReelle / 50.0);
+            courantReel = enAcceleration ? chargeNominale * 1.6 : chargeNominale; // Pic d'intensité transitoire
+        } else {
+            courantReel = 0.0;
+        }
+
+        // Animation Rotor SVG
         if (frequenceReelle > 0.1) {
             angleRotor += (frequenceReelle / 5) * sensRotation;
             document.getElementById("rotor").setAttribute("transform", `rotate(${angleRotor} 50 50)`);
         }
 
-        document.getElementById("valeur-frequence").innerText = `${frequenceReelle.toFixed(1)} Hz`;
+        // Modulateur Audio MLI
+        if (audioAutorise && gainMLI) {
+            if (frequenceReelle > 0.1) {
+                oscMLI.frequency.value = 120 + (frequenceReelle * 14); // Variation de tonalité PWM
+                gainMLI.gain.value = 0.03 + (courantReel / 100);       // Volume proportionnel à la charge
+            } else {
+                gainMLI.gain.value = 0;
+            }
+        }
+
+        // Mise à jour de l'Oscilloscope
+        histFrq.push(frequenceReelle); histFrq.shift();
+        histCourant.push(courantReel); histCourant.shift();
+        dessinerOscilloscope();
+
         if (cheminActuel.length === 1 && !modeEdition && !defautActif) mettreAjourEcran();
 
         setTimeout(boucleMoteur, 50);
     }
 
-    // 6. Gestion du Changement de TP
+    function dessinerOscilloscope() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Lignes de grille
+        ctx.strokeStyle = "#222"; ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height/2); ctx.lineTo(canvas.width, canvas.height/2);
+        ctx.stroke();
+
+        // Tracé Fréquence (Cyan)
+        ctx.strokeStyle = "#00ffcc"; ctx.lineWidth = 2; ctx.beginPath();
+        for (let i = 0; i < histFrq.length; i++) {
+            let x = (i / (histFrq.length - 1)) * canvas.width;
+            let y = canvas.height - (histFrq[i] / 70) * canvas.height;
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        // Tracé Courant (Jaune)
+        ctx.strokeStyle = "#ffcc00"; ctx.lineWidth = 1.5; ctx.beginPath();
+        for (let i = 0; i < histCourant.length; i++) {
+            let x = (i / (histCourant.length - 1)) * canvas.width;
+            let y = canvas.height - (histCourant[i] / 10) * canvas.height;
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+    }
+
+    // 5. Gestion des TP et Exportation Word
     function changerTP() {
         const cle = document.getElementById("select-tp").value;
         const tp = banquesTP[cle];
@@ -534,40 +525,27 @@
         document.getElementById("btn-export").style.display = "none";
     }
 
-    // 7. Évaluation et Génération des Données
     function evaluerTP() {
         const nom = document.getElementById("nom-etudiant").value.trim();
         const prenom = document.getElementById("prenom-etudiant").value.trim();
-
-        if (!nom || !prenom) {
-            alert("Veuillez saisir le nom et le prénom de l'étudiant avant de valider.");
-            return;
-        }
+        if (!nom || !prenom) { alert("Saisissez le nom et prénom."); return; }
 
         const cle = document.getElementById("select-tp").value;
         const tp = banquesTP[cle];
-        let points = 0;
-        let total = Object.keys(tp.attentes).length;
-        let details = [];
+        let points = 0, total = Object.keys(tp.attentes).length, details = [];
 
         for (let param in tp.attentes) {
-            let valActuelle = obtenirValeurParam(param);
-            if (valActuelle === tp.attentes[param]) {
-                points++;
-                details.push({ param: param, attendu: tp.attentes[param], obtenu: valActuelle, statut: "OK" });
+            let valAct = obtenirValeurParam(param);
+            if (valAct === tp.attentes[param]) {
+                points++; details.push({ param: param, attendu: tp.attentes[param], obtenu: valAct, statut: "OK" });
             } else {
-                details.push({ param: param, attendu: tp.attentes[param], obtenu: valActuelle, statut: "ERREUR" });
+                details.push({ param: param, attendu: tp.attentes[param], obtenu: valAct, statut: "ERREUR" });
             }
         }
 
         const note = Math.round((points / total) * 20);
-        
         dernierRapport = {
-            nom: nom,
-            prenom: prenom,
-            tpTitre: tp.titre,
-            note: note,
-            details: details,
+            nom: nom, prenom: prenom, tpTitre: tp.titre, note: note, details: details,
             date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
         };
 
@@ -575,100 +553,50 @@
         box.style.display = "block";
         box.style.background = note >= 10 ? "#1e4620" : "#5c1d24";
         box.innerHTML = `<strong>Note : ${note} / 20</strong><br>` + 
-            details.map(d => d.statut === "OK" ? 
-                `✅ <strong>${d.param}</strong> : ${d.obtenu}` : 
-                `❌ <strong>${d.param}</strong> : ${d.obtenu} (Attendu: ${d.attendu})`
-            ).join("<br>");
+            details.map(d => d.statut === "OK" ? `✅ <strong>${d.param}</strong> : ${d.obtenu}` : `❌ <strong>${d.param}</strong> : ${d.obtenu} (Attendu: ${d.attendu})`).join("<br>");
 
         document.getElementById("btn-export").style.display = "inline-block";
     }
 
-    // 8. Exportation au format Word (.doc)
     function exporterRapportWord() {
         if (!dernierRapport) return;
-
         const contenuHtml = `
             <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
             <head><meta charset='utf-8'><title>Rapport d'Évaluation</title>
-            <style>
-                body { font-family: Arial, sans-serif; padding: 20px; }
-                h2 { color: #003366; }
-                table { border-collapse: collapse; width: 100%; margin-top: 15px; }
-                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                th { background-color: #f2f2f2; }
-                .valide { color: green; font-weight: bold; }
-                .erreur { color: red; font-weight: bold; }
-            </style>
+            <style>body { font-family: Arial, sans-serif; padding: 20px; } table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #ddd; padding: 8px; } th { background-color: #f2f2f2; }</style>
             </head>
             <body>
                 <h2>Compte-Rendu d'Évaluation - ATV320</h2>
                 <p><strong>Étudiant :</strong> ${dernierRapport.nom} ${dernierRapport.prenom}</p>
                 <p><strong>Date :</strong> ${dernierRapport.date}</p>
                 <p><strong>Épreuve :</strong> ${dernierRapport.tpTitre}</p>
-                <hr>
-                <h3>Résultat : ${dernierRapport.note} / 20</h3>
+                <hr><h3>Note : ${dernierRapport.note} / 20</h3>
                 <table>
-                    <thead>
-                        <tr>
-                            <th>Paramètre</th>
-                            <th>Valeur Attendue</th>
-                            <th>Valeur Obtenue</th>
-                            <th>Statut</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>Paramètre</th><th>Attendu</th><th>Obtenu</th><th>Statut</th></tr></thead>
                     <tbody>
-                        ${dernierRapport.details.map(d => `
-                            <tr>
-                                <td><b>${d.param}</b></td>
-                                <td>${d.attendu}</td>
-                                <td>${d.obtenu}</td>
-                                <td class="${d.statut === 'OK' ? 'valide' : 'erreur'}">${d.statut === 'OK' ? 'CONFORME' : 'NON CONFORME'}</td>
-                            </tr>
-                        `).join('')}
+                        ${dernierRapport.details.map(d => `<tr><td><b>${d.param}</b></td><td>${d.attendu}</td><td>${d.obtenu}</td><td>${d.statut}</td></tr>`).join('')}
                     </tbody>
                 </table>
-            </body>
-            </html>
-        `;
-
+            </body></html>`;
         const blob = new Blob(['\ufeff' + contenuHtml], { type: 'application/msword' });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Rapport_TP_${dernierRapport.nom}_${dernierRapport.prenom}.doc`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        const a = document.createElement('a'); a.href = url;
+        a.download = `Rapport_${dernierRapport.nom}_${dernierRapport.prenom}.doc`;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
     }
 
-    function declencherDefaut(code) {
-        defautActif = code;
-        ecran.classList.add("clignotement");
-        di1 = false; di2 = false;
-        basculerDI(0);
-        mettreAjourEcran();
-    }
-
-    function acquitterDefaut() {
-        ecran.classList.remove("clignotement");
-        defautActif = null;
-        mettreAjourEcran();
-        reinitialiserTimeout();
-    }
+    function declencherDefaut(code) { defautActif = code; ecran.classList.add("clignotement"); di1 = false; di2 = false; basculerDI(0); mettreAjourEcran(); }
+    function acquitterDefaut() { ecran.classList.remove("clignotement"); defautActif = null; mettreAjourEcran(); reinitialiserTimeout(); }
 
     function configurerAppuiLong(elementId, action) {
         const btn = document.getElementById(elementId);
         let timerInitial, intervalRapide;
-
         const demarrer = (e) => {
             if (e.cancelable) e.preventDefault();
             action();
             timerInitial = setTimeout(() => { intervalRapide = setInterval(action, 100); }, 400);
         };
-
         const arreter = () => { clearTimeout(timerInitial); clearInterval(intervalRapide); };
-
         btn.addEventListener('touchstart', demarrer, { passive: false });
         btn.addEventListener('touchend', arreter);
         btn.addEventListener('touchcancel', arreter);
