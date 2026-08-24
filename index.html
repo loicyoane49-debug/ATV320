@@ -97,8 +97,8 @@
             <button class="btn-atv btn-esc" onclick="actionEsc()">ESC</button>
             <button class="btn-atv btn-ent" onclick="actionEnt()">ENT</button>
             <div class="molette">
-                <button class="btn-atv" id="btn-haut">▲</button>
-                <button class="btn-atv" id="btn-bas">▼</button>
+                <button class="btn-atv" id="btn-haut" onclick="actionHaut()">▲</button>
+                <button class="btn-atv" id="btn-bas" onclick="actionBas()">▼</button>
             </div>
             <button class="btn-atv btn-run" onclick="actionRunHMI()">RUN</button>
             <button class="btn-atv btn-stop" onclick="actionStopHMI()">STOP</button>
@@ -180,16 +180,15 @@
 </div>
 
 <script>
-    // 1. Structure de menus incluant tUn (Auto-tuning), Cd1 (Canal Commande) et Fr1 (Canal Consigne)
+    // 1. Structure de menus corrigée
     const menuATV320 = {
         id: "ROOT", type: "menu", enfants: [
-            { id: "rEF-", type: "menu", enfants: [] },
             { id: "COnF", type: "menu", enfants: [
                 { id: "FULL", type: "menu", enfants: [
                     { id: "drC-", type: "menu", enfants: [
                         { id: "bFr", type: "param", valeur: 50.0, pas: 10.0, paramKey: "bFr" },
-                        { id: "UnS", type: "param", valeur: 0.0, pas: 10.0, paramKey: "UnS" },  // Défaut 0 = non réglé
-                        { id: "nCr", type: "param", valeur: 0.0, pas: 0.1, paramKey: "nCr" },  // Défaut 0 = non réglé
+                        { id: "UnS", type: "param", valeur: 0.0, pas: 10.0, paramKey: "UnS" },
+                        { id: "nCr", type: "param", valeur: 0.0, pas: 0.1, paramKey: "nCr" },
                         { id: "FrS", type: "param", valeur: 50.0, pas: 1.0, paramKey: "FrS" },
                         { id: "nSP", type: "param", valeur: 1440, pas: 10, paramKey: "nSP" },
                         { id: "tUn", type: "enum", options: ["nO", "YES", "dOn"], indexOpt: 0, paramKey: "tUn" }
@@ -224,6 +223,7 @@
     let cheminActuel = [menuATV320];
     let indexActuel = 0;
     let modeEdition = false;
+    let enNavMenu = false;
     let enValidation = false;
     let defautActif = null;
     let runHMI = false;
@@ -234,7 +234,6 @@
     let angleRotor = 0;
     let sensRotation = 1;
 
-    // Web Audio API Multi-Oscillateurs
     let audioCtx = null, oscIGBT = null, oscStator = null, gainMaster = null, audioAutorise = false;
 
     const ecran = document.getElementById("affichage");
@@ -269,52 +268,73 @@
     // 2. Navigation Façade ATV320
     function mettreAjourEcran() {
         if (defautActif) { ecran.innerText = defautActif; ecran.style.color = "#ff0000"; return; }
-        let noeudActuel = cheminActuel[cheminActuel.length - 1];
-        if (cheminActuel.length === 1 && !modeEdition) {
+        
+        if (!enNavMenu) {
             if (frequenceReelle > 0.1) { ecran.innerText = frequenceReelle.toFixed(1); ecran.style.color = "#00ffcc"; }
             else { ecran.innerText = "rdY"; ecran.style.color = "#ff0000"; }
             return;
         }
+
+        let noeudActuel = cheminActuel[cheminActuel.length - 1];
         let item = noeudActuel.enfants[indexActuel];
+
+        if (!item) { ecran.innerText = "----"; ecran.style.color = "#ff0000"; return; }
+
         if (modeEdition) {
             if (item.type === "enum") ecran.innerText = item.options[item.indexOpt];
             else ecran.innerText = item.valeur.toFixed(1);
             ecran.style.color = "#00ff00";
         } else {
-            ecran.innerText = noeudActuel.enfants.length > 0 ? item.id : "----";
+            ecran.innerText = item.id;
             ecran.style.color = "#ff0000";
         }
     }
 
     function actionHaut() {
-        if (enValidation || defautActif) return;
+        if (enValidation || defautActif || !enNavMenu) return;
         let noeudActuel = cheminActuel[cheminActuel.length - 1];
         let item = noeudActuel.enfants[indexActuel];
+
         if (modeEdition) {
             if (item.type === "enum") item.indexOpt = (item.indexOpt + 1) % item.options.length;
             else item.valeur = parseFloat((item.valeur + item.pas).toFixed(1));
-        } else { if (indexActuel < noeudActuel.enfants.length - 1) indexActuel++; }
+        } else {
+            if (indexActuel < noeudActuel.enfants.length - 1) indexActuel++;
+        }
         mettreAjourEcran();
     }
 
     function actionBas() {
-        if (enValidation || defautActif) return;
+        if (enValidation || defautActif || !enNavMenu) return;
         let noeudActuel = cheminActuel[cheminActuel.length - 1];
         let item = noeudActuel.enfants[indexActuel];
+
         if (modeEdition) {
             if (item.type === "enum") item.indexOpt = (item.indexOpt - 1 + item.options.length) % item.options.length;
             else { if (item.valeur - item.pas >= 0) item.valeur = parseFloat((item.valeur - item.pas).toFixed(1)); }
-        } else { if (indexActuel > 0) indexActuel--; }
+        } else {
+            if (indexActuel > 0) indexActuel--;
+        }
         mettreAjourEcran();
     }
 
     function actionEnt() {
         if (enValidation || defautActif) return;
+
+        if (!enNavMenu) {
+            enNavMenu = true;
+            cheminActuel = [menuATV320];
+            indexActuel = 0;
+            mettreAjourEcran();
+            return;
+        }
+
         let noeudActuel = cheminActuel[cheminActuel.length - 1];
         let selection = noeudActuel.enfants[indexActuel];
 
+        if (!selection) return;
+
         if (modeEdition) {
-            // Traitement spécifique pour l'Auto-tuning tUn
             if (selection.paramKey === "tUn" && selection.options[selection.indexOpt] === "YES") {
                 enValidation = true;
                 ecran.innerText = "tUn";
@@ -324,21 +344,33 @@
                     ecran.classList.remove("clignotement");
                     modeEdition = false; enValidation = false;
                     mettreAjourEcran();
-                }, 2000); // Simulation mesure 2s
+                }, 2000);
                 return;
             }
 
             enValidation = true; ecran.classList.add("clignotement");
-            setTimeout(() => { ecran.classList.remove("clignotement"); modeEdition = false; enValidation = false; mettreAjourEcran(); }, 1000);
-        } else if (selection && selection.type === "menu") { cheminActuel.push(selection); indexActuel = 0; mettreAjourEcran(); }
-        else if (selection && (selection.type === "param" || selection.type === "enum")) { modeEdition = true; mettreAjourEcran(); }
+            setTimeout(() => { ecran.classList.remove("clignotement"); modeEdition = false; enValidation = false; mettreAjourEcran(); }, 800);
+        } else if (selection && selection.type === "menu" && selection.enfants.length > 0) {
+            cheminActuel.push(selection);
+            indexActuel = 0;
+            mettreAjourEcran();
+        } else if (selection && (selection.type === "param" || selection.type === "enum")) {
+            modeEdition = true;
+            mettreAjourEcran();
+        }
     }
 
     function actionEsc() {
         if (enValidation) return;
-        if (modeEdition) modeEdition = false;
-        else if (cheminActuel.length > 1) { cheminActuel.pop(); indexActuel = 0; }
-        else { cheminActuel = [menuATV320]; indexActuel = 0; }
+
+        if (modeEdition) {
+            modeEdition = false;
+        } else if (cheminActuel.length > 1) {
+            cheminActuel.pop();
+            indexActuel = 0;
+        } else {
+            enNavMenu = false;
+        }
         mettreAjourEcran();
     }
 
@@ -372,7 +404,6 @@
         const hsp = obtenirValeurParam("HSP") || 50.0;
         const sp2 = obtenirValeurParam("SP2") || 15.0;
 
-        // Validation Procédure
         const drcValide = uns > 0 && ncr > 0;
         const tunValide = tun === "dOn";
 
@@ -383,7 +414,6 @@
         document.getElementById("chk-cd1").innerText = cd1;
         document.getElementById("chk-fr1").innerText = fr1;
 
-        // Autorisation de démarrage
         let ordreMarche = false;
         if (drcValide && tunValide) {
             if (cd1 === "tEr" && (di1 || di2)) ordreMarche = true;
@@ -413,36 +443,31 @@
             document.getElementById("rotor").setAttribute("transform", `rotate(${angleRotor} 50 50)`);
         }
 
-        // Moteur Acoustique Réaliste
         mettreAjourAudioMoteur();
 
-        // Affichage Bus Modbus
         let cmd = ordreMarche ? 0x000F : 0x0000;
         let eta = frequenceReelle > 0.1 ? 0x0237 : (drcValide && tunValide ? 0x0240 : 0x0208);
         document.getElementById("valeur-cmd").innerText = "0x" + cmd.toString(16).padStart(4, '0').toUpperCase();
         document.getElementById("valeur-eta").innerText = "0x" + eta.toString(16).padStart(4, '0').toUpperCase();
 
-        // Oscilloscope
         histFrq.push(frequenceReelle); histFrq.shift();
         histCourant.push(courantReel); histCourant.shift();
         dessinerOscilloscope();
 
-        if (cheminActuel.length === 1 && !modeEdition && !defautActif) mettreAjourEcran();
+        if (!enNavMenu && !defautActif) mettreAjourEcran();
 
         setTimeout(boucleMoteur, 50);
     }
 
-    // 4. Moteur Audio Web Audio API Réaliste (Inverter + Stator Noise)
+    // 4. Moteur Audio
     function initialiserAudio() {
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-            // Source 1 : Sifflement de découpage IGBT MLI (4000 Hz)
             oscIGBT = audioCtx.createOscillator();
             oscIGBT.type = 'sine';
-            oscIGBT.frequency.value = 4000; // SFr ATV320 = 4kHz
+            oscIGBT.frequency.value = 4000;
 
-            // Source 2 : Bourdonnement Électromagnétique Stator (0-50 Hz)
             oscStator = audioCtx.createOscillator();
             oscStator.type = 'sawtooth';
             oscStator.frequency.value = 5;
@@ -463,10 +488,7 @@
     function mettreAjourAudioMoteur() {
         if (audioAutorise && gainMaster) {
             if (frequenceReelle > 0.1) {
-                // Le bourdonnement stator suit la fréquence réelle du champ tournant
                 oscStator.frequency.value = Math.max(frequenceReelle, 2);
-                
-                // Volume proportionnel à la charge et à la vitesse
                 gainMaster.gain.value = 0.02 + (courantReel / 200);
             } else {
                 gainMaster.gain.value = 0;
