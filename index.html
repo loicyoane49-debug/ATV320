@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Simulateur ATV320 - Oscilloscope & Son MLI</title>
+    <title>Simulateur ATV320 - Bornier Avancé & Bus Modbus/CiA402</title>
     <style>
         body {
             background-color: #1e1e24;
@@ -25,7 +25,7 @@
             flex-wrap: wrap;
             gap: 20px;
             justify-content: center;
-            max-width: 1200px;
+            max-width: 1250px;
             width: 100%;
         }
 
@@ -35,7 +35,7 @@
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-            width: 300px;
+            width: 310px;
             border: 2px solid #444;
         }
         .ecran {
@@ -75,7 +75,7 @@
         .molette { grid-column: span 2; display: flex; justify-content: space-between; }
         .molette button { width: 48%; }
 
-        /* BORNIER DE COMMANDE */
+        /* BORNIER DE COMMANDE ETENDU (4 ENTRÉES) */
         .bornier {
             margin-top: 15px;
             background: #202020;
@@ -83,18 +83,19 @@
             border-radius: 8px;
             border: 1px solid #3a3a3a;
         }
-        .bornier-title { font-size: 13px; color: #aaa; margin-bottom: 8px; text-align: center; }
-        .interrupteurs { display: flex; justify-content: space-around; }
-        .switch-container { text-align: center; font-size: 12px; }
+        .bornier-title { font-size: 12px; color: #aaa; margin-bottom: 8px; text-align: center; }
+        .interrupteurs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .switch-container { text-align: center; font-size: 11px; background: #181818; padding: 6px; border-radius: 4px; }
         .switch-btn {
             background: #555;
             color: white;
             border: none;
-            padding: 8px 12px;
+            padding: 6px 10px;
             border-radius: 4px;
             cursor: pointer;
             margin-top: 4px;
             font-weight: bold;
+            width: 100%;
         }
         .switch-btn.active { background: #007bff; }
 
@@ -103,14 +104,14 @@
             background-color: #2b2b2b;
             padding: 20px;
             border-radius: 12px;
-            width: 320px;
+            width: 310px;
             border: 2px solid #444;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 12px;
         }
-        .moteur-svg { width: 110px; height: 110px; }
+        .moteur-svg { width: 100px; height: 100px; }
         .rotor { transform-origin: center; }
 
         .cadre-oscillo {
@@ -123,7 +124,7 @@
             text-align: center;
         }
         .titre-oscillo { font-size: 11px; color: #aaa; margin-bottom: 4px; display: flex; justify-content: space-between; }
-        canvas { background: #050505; border: 1px solid #222; border-radius: 4px; width: 100%; height: 110px; }
+        canvas { background: #050505; border: 1px solid #222; border-radius: 4px; width: 100%; height: 100px; }
 
         .btn-audio {
             background: #6f42c1;
@@ -138,24 +139,33 @@
         }
         .btn-audio.actif { background: #28a745; }
 
-        /* MODULE TP & RAPPORTS */
-        .panneau-droite { display: flex; flex-direction: column; gap: 15px; width: 360px; }
+        /* PANNEAU DROITE : REGISTRES BUS & TP */
+        .panneau-droite { display: flex; flex-direction: column; gap: 15px; width: 380px; }
         .carte { background: #2b2b2b; padding: 15px; border-radius: 12px; border: 2px solid #444; }
-        .carte h3 { margin-top: 0; font-size: 16px; color: #00ffcc; border-bottom: 1px solid #444; padding-bottom: 8px; }
+        .carte h3 { margin-top: 0; font-size: 15px; color: #00ffcc; border-bottom: 1px solid #444; padding-bottom: 8px; }
         
+        /* MONITEUR BUS DE TERRAIN MODBUS / CiA402 */
+        .registre-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .registre-box { background: #111; padding: 8px; border-radius: 6px; border: 1px solid #333; text-align: center; }
+        .registre-valeur { font-family: monospace; font-size: 16px; color: #ffcc00; font-weight: bold; margin-top: 2px; }
+        .bits-list { font-size: 11px; font-family: monospace; display: flex; flex-direction: column; gap: 3px; background: #181818; padding: 8px; border-radius: 6px; }
+        .bit-item { display: flex; justify-content: space-between; }
+        .bit-on { color: #00ffcc; font-weight: bold; }
+        .bit-off { color: #555; }
+
         .champs-etudiant { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-        .input-etudiant { background: #111; border: 1px solid #555; color: white; padding: 8px; border-radius: 4px; width: 100%; box-sizing: border-box; font-size: 13px; }
+        .input-etudiant { background: #111; border: 1px solid #555; color: white; padding: 8px; border-radius: 4px; width: 100%; box-sizing: border-box; font-size: 12px; }
         .select-tp { width: 100%; background: #111; color: #00ffcc; border: 1px solid #555; padding: 8px; border-radius: 4px; font-weight: bold; margin-bottom: 10px; }
-        .consigne-box { background: #1a1a1a; padding: 10px; border-radius: 6px; font-size: 13px; margin-bottom: 10px; line-height: 1.4; }
+        .consigne-box { background: #1a1a1a; padding: 10px; border-radius: 6px; font-size: 12px; margin-bottom: 10px; line-height: 1.4; }
         
         .groupe-boutons-eval { display: flex; gap: 10px; }
         .btn-eval { background: #28a745; color: white; border: none; padding: 10px; flex: 1; border-radius: 6px; font-weight: bold; cursor: pointer; }
         .btn-export { background: #007bff; color: white; border: none; padding: 10px; flex: 1; border-radius: 6px; font-weight: bold; cursor: pointer; display: none; }
-        .resultat-eval { margin-top: 10px; font-size: 13px; padding: 8px; border-radius: 4px; display: none; }
+        .resultat-eval { margin-top: 10px; font-size: 12px; padding: 8px; border-radius: 4px; display: none; }
 
         .grid-defauts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .btn-defaut { background: #dc3545; color: white; border: none; padding: 8px; font-size: 12px; border-radius: 4px; cursor: pointer; }
-        .btn-reset { background: #17a2b8; color: white; border: none; padding: 8px; font-size: 12px; border-radius: 4px; cursor: pointer; grid-column: span 2; }
+        .btn-defaut { background: #dc3545; color: white; border: none; padding: 8px; font-size: 11px; border-radius: 4px; cursor: pointer; }
+        .btn-reset { background: #17a2b8; color: white; border: none; padding: 8px; font-size: 11px; border-radius: 4px; cursor: pointer; grid-column: span 2; }
     </style>
 </head>
 <body>
@@ -177,8 +187,9 @@
             </div>
         </div>
 
+        <!-- BORNIER 4 ENTRÉES -->
         <div class="bornier">
-            <div class="bornier-title">Bornier de Commande Virtuel</div>
+            <div class="bornier-title">Bornier de Commande (DI1-DI4)</div>
             <div class="interrupteurs">
                 <div class="switch-container">
                     <div>DI1 (FWD)</div>
@@ -188,11 +199,19 @@
                     <div>DI2 (REV)</div>
                     <button class="switch-btn" id="sw-di2" onclick="basculerDI(2)">OFF</button>
                 </div>
+                <div class="switch-container">
+                    <div>DI3 (PS2)</div>
+                    <button class="switch-btn" id="sw-di3" onclick="basculerDI(3)">OFF</button>
+                </div>
+                <div class="switch-container">
+                    <div>DI4 (PS4)</div>
+                    <button class="switch-btn" id="sw-di4" onclick="basculerDI(4)">OFF</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- MOTEUR & OSCILLOSCOPE & AUDIO -->
+    <!-- MOTEUR & OSCILLOSCOPE -->
     <div class="panneau-moteur">
         <h3 style="margin: 0; font-size: 15px;">Moteur & Oscilloscope</h3>
         
@@ -206,23 +225,44 @@
             </g>
         </svg>
 
-        <!-- Module Son MLI -->
         <button class="btn-audio" id="btn-audio" onclick="basculerAudio()">🔊 Activer Son MLI Moteur</button>
 
-        <!-- Graphique Temps Réel -->
         <div class="cadre-oscillo">
             <div class="titre-oscillo">
                 <span style="color: #00ffcc;">― Fréquence (Hz)</span>
                 <span style="color: #ffcc00;">― Courant (A)</span>
             </div>
-            <canvas id="oscilloscope" width="280" height="110"></canvas>
+            <canvas id="oscilloscope" width="280" height="100"></canvas>
         </div>
     </div>
 
-    <!-- MODULE TP & DEFFAUTS -->
+    <!-- REGISTRES MODBUS & ÉVALUATION TP -->
     <div class="panneau-droite">
+        
+        <!-- REGISTRES BUS MODBUS / CIA402 -->
         <div class="carte">
-            <h3>Évaluation & Rapport TP</h3>
+            <h3>Bus de Terrain (Modbus / CiA402)</h3>
+            <div class="registre-grid">
+                <div class="registre-box">
+                    <span style="font-size: 10px; color: #888;">CMD (8501)</span>
+                    <div class="registre-valeur" id="valeur-cmd">0x0000</div>
+                </div>
+                <div class="registre-box">
+                    <span style="font-size: 10px; color: #888;">ETA (3201)</span>
+                    <div class="registre-valeur" id="valeur-eta">0x0240</div>
+                </div>
+            </div>
+            <div class="bits-list">
+                <div class="bit-item"><span>Bit 0 : Ready to Switch On</span><span id="bit-eta-0" class="bit-off">0</span></div>
+                <div class="bit-item"><span>Bit 1 : Switched On</span><span id="bit-eta-1" class="bit-off">0</span></div>
+                <div class="bit-item"><span>Bit 2 : Operation Enabled (RUN)</span><span id="bit-eta-2" class="bit-off">0</span></div>
+                <div class="bit-item"><span>Bit 3 : Fault Active</span><span id="bit-eta-3" class="bit-off">0</span></div>
+            </div>
+        </div>
+
+        <!-- MODULE ÉVALUATION -->
+        <div class="carte">
+            <h3>Évaluation TP</h3>
             <div class="champs-etudiant">
                 <input type="text" id="nom-etudiant" class="input-etudiant" placeholder="Nom">
                 <input type="text" id="prenom-etudiant" class="input-etudiant" placeholder="Prénom">
@@ -232,6 +272,7 @@
                 <option value="tp1">TP 1 : Plaque Signalétique Moteur</option>
                 <option value="tp2">TP 2 : Configuration des Rampes</option>
                 <option value="tp3">TP 3 : Limitation de Vitesse (LSP/HSP)</option>
+                <option value="tp4">TP 4 : Vitesses Présélectionnées (SP2/SP3)</option>
             </select>
 
             <div class="consigne-box" id="consigne-tp"></div>
@@ -254,12 +295,13 @@
                 <button class="btn-reset" onclick="acquitterDefaut()">Acquitter / Reset</button>
             </div>
         </div>
+
     </div>
 
 </div>
 
 <script>
-    // 1. Arborescence des menus ATV320
+    // 1. Arborescence des menus ATV320 avec Vitesses Présélectionnées
     const menuATV320 = {
         id: "ROOT", type: "menu", enfants: [
             { id: "rEF-", type: "menu", enfants: [] },
@@ -275,7 +317,12 @@
                         { id: "ACC", type: "param", valeur: 3.0, pas: 0.1, paramKey: "ACC" },
                         { id: "dEC", type: "param", valeur: 3.0, pas: 0.1, paramKey: "dEC" },
                         { id: "LSP", type: "param", valeur: 0.0, pas: 0.1, paramKey: "LSP" },
-                        { id: "HSP", type: "param", valeur: 50.0, pas: 0.1, paramKey: "HSP" }
+                        { id: "HSP", type: "param", valeur: 50.0, pas: 0.1, paramKey: "HSP" },
+                        { id: "PSS-", type: "menu", enfants: [
+                            { id: "SP2", type: "param", valeur: 15.0, pas: 1.0, paramKey: "SP2" },
+                            { id: "SP3", type: "param", valeur: 30.0, pas: 1.0, paramKey: "SP3" },
+                            { id: "SP4", type: "param", valeur: 45.0, pas: 1.0, paramKey: "SP4" }
+                        ]}
                     ]}
                 ]}
             ]}
@@ -285,7 +332,8 @@
     const banquesTP = {
         tp1: { titre: "TP 1 : Plaque Signalétique", consignes: "1. UnS : <strong>380 V</strong><br>2. nCr : <strong>5.5 A</strong><br>3. FrS : <strong>50 Hz</strong>", attentes: { UnS: 380.0, nCr: 5.5, FrS: 50.0 } },
         tp2: { titre: "TP 2 : Rampes de Vitesse", consignes: "1. ACC : <strong>5.0 s</strong><br>2. dEC : <strong>2.5 s</strong>", attentes: { ACC: 5.0, dEC: 2.5 } },
-        tp3: { titre: "TP 3 : Bornes de Vitesse", consignes: "1. LSP : <strong>15.0 Hz</strong><br>2. HSP : <strong>60.0 Hz</strong>", attentes: { LSP: 15.0, HSP: 60.0 } }
+        tp3: { titre: "TP 3 : Limitation de Vitesse", consignes: "1. LSP : <strong>15.0 Hz</strong><br>2. HSP : <strong>60.0 Hz</strong>", attentes: { LSP: 15.0, HSP: 60.0 } },
+        tp4: { titre: "TP 4 : Vitesses Présélectionnées", consignes: "1. Vitesse 2 (SP2) : <strong>10.0 Hz</strong><br>2. Vitesse 3 (SP3) : <strong>25.0 Hz</strong>", attentes: { SP2: 10.0, SP3: 25.0 } }
     };
 
     let cheminActuel = [menuATV320];
@@ -296,7 +344,7 @@
     let timerInactivite = null;
     let dernierRapport = null;
 
-    let di1 = false; di2 = false;
+    let di1 = false, di2 = false, di3 = false, di4 = false;
     let frequenceReelle = 0.0;
     let courantReel = 0.0;
     let angleRotor = 0;
@@ -309,11 +357,8 @@
     let histFrq = new Array(bufferTaille).fill(0);
     let histCourant = new Array(bufferTaille).fill(0);
 
-    // Audio MLI / PWM
-    let audioCtx = null;
-    let oscMLI = null;
-    let gainMLI = null;
-    let audioAutorise = false;
+    // Audio MLI
+    let audioCtx = null, oscMLI = null, gainMLI = null, audioAutorise = false;
 
     const ecran = document.getElementById("affichage");
 
@@ -387,59 +432,40 @@
         mettreAjourEcran();
     }
 
+    // 3. Gestion Bornier 4 Entrées
     function basculerDI(num) {
         if (num === 1) { di1 = !di1; if (di1) di2 = false; }
         else if (num === 2) { di2 = !di2; if (di2) di1 = false; }
-        document.getElementById("sw-di1").className = di1 ? "switch-btn active" : "switch-btn";
-        document.getElementById("sw-di1").innerText = di1 ? "ON" : "OFF";
-        document.getElementById("sw-di2").className = di2 ? "switch-btn active" : "switch-btn";
-        document.getElementById("sw-di2").innerText = di2 ? "ON" : "OFF";
-    }
+        else if (num === 3) { di3 = !di3; }
+        else if (num === 4) { di4 = !di4; }
 
-    // 3. Module Web Audio API (Son MLI)
-    function initialiserAudio() {
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            oscMLI = audioCtx.createOscillator();
-            gainMLI = audioCtx.createGain();
-
-            oscMLI.type = 'sawtooth'; // Harmoniques proches du découpage MLI
-            oscMLI.frequency.value = 100;
-            gainMLI.gain.value = 0;
-
-            oscMLI.connect(gainMLI);
-            gainMLI.connect(audioCtx.destination);
-            oscMLI.start();
-        }
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-    }
-
-    function basculerAudio() {
-        audioAutorise = !audioAutorise;
-        const btn = document.getElementById("btn-audio");
-        if (audioAutorise) {
-            initialiserAudio();
-            btn.className = "btn-audio actif";
-            btn.innerText = "🔊 Son MLI Actif";
-        } else {
-            if (gainMLI) gainMLI.gain.value = 0;
-            btn.className = "btn-audio";
-            btn.innerText = "🔇 Activer Son MLI Moteur";
+        for (let i = 1; i <= 4; i++) {
+            let etat = eval(`di${i}`);
+            let btn = document.getElementById(`sw-di${i}`);
+            btn.className = etat ? "switch-btn active" : "switch-btn";
+            btn.innerText = etat ? "ON" : "OFF";
         }
     }
 
-    // 4. Moteur Physique, Oscilloscope et Synthèse Sonore
+    // 4. Moteur Physique, Registres Bus & Son
     function boucleMoteur() {
         const acc = obtenirValeurParam("ACC") || 3.0;
         const dec = obtenirValeurParam("dEC") || 3.0;
         const hsp = obtenirValeurParam("HSP") || 50.0;
         const lsp = obtenirValeurParam("LSP") || 0.0;
+        const sp2 = obtenirValeurParam("SP2") || 15.0;
+        const sp3 = obtenirValeurParam("SP3") || 30.0;
+        const sp4 = obtenirValeurParam("SP4") || 45.0;
         const ncr = obtenirValeurParam("nCr") || 4.2;
 
+        // Logique de consigne de vitesse (Vitesses Présélectionnées)
         let consigneFrq = 0.0;
-        if (!defautActif) {
-            if (di1) { consigneFrq = hsp; sensRotation = 1; }
-            else if (di2) { consigneFrq = hsp; sensRotation = -1; }
+        if (!defautActif && (di1 || di2)) {
+            sensRotation = di1 ? 1 : -1;
+            if (!di3 && !di4) consigneFrq = hsp;
+            else if (di3 && !di4) consigneFrq = sp2;
+            else if (!di3 && di4) consigneFrq = sp3;
+            else if (di3 && di4) consigneFrq = sp4;
         }
 
         const pasTemps = 0.05;
@@ -454,31 +480,30 @@
             if (frequenceReelle < 0) frequenceReelle = 0;
         }
 
-        // Calcul dynamique du courant absorbé (Loi U/f + pic au démarrage)
         if (frequenceReelle > 0.1) {
             let chargeNominale = ncr * (frequenceReelle / 50.0);
-            courantReel = enAcceleration ? chargeNominale * 1.6 : chargeNominale; // Pic d'intensité transitoire
+            courantReel = enAcceleration ? chargeNominale * 1.5 : chargeNominale;
         } else {
             courantReel = 0.0;
         }
 
-        // Animation Rotor SVG
         if (frequenceReelle > 0.1) {
             angleRotor += (frequenceReelle / 5) * sensRotation;
             document.getElementById("rotor").setAttribute("transform", `rotate(${angleRotor} 50 50)`);
         }
 
-        // Modulateur Audio MLI
+        // Mise à jour Registres Modbus / CiA402
+        mettreAjourRegistresBus();
+
+        // Audio MLI
         if (audioAutorise && gainMLI) {
             if (frequenceReelle > 0.1) {
-                oscMLI.frequency.value = 120 + (frequenceReelle * 14); // Variation de tonalité PWM
-                gainMLI.gain.value = 0.03 + (courantReel / 100);       // Volume proportionnel à la charge
-            } else {
-                gainMLI.gain.value = 0;
-            }
+                oscMLI.frequency.value = 120 + (frequenceReelle * 14);
+                gainMLI.gain.value = 0.03 + (courantReel / 100);
+            } else { gainMLI.gain.value = 0; }
         }
 
-        // Mise à jour de l'Oscilloscope
+        // Graphique Oscilloscope
         histFrq.push(frequenceReelle); histFrq.shift();
         histCourant.push(courantReel); histCourant.shift();
         dessinerOscilloscope();
@@ -488,16 +513,46 @@
         setTimeout(boucleMoteur, 50);
     }
 
+    function mettreAjourRegistresBus() {
+        let cmd = 0x0000;
+        let eta = 0x0240; // Defaut : Switch On Disabled (rdY)
+
+        if (di1 || di2) cmd = 0x000F; // Ordre de marche RUN (Enable Operation)
+
+        if (defautActif) {
+            eta = 0x0208; // Fault Active
+        } else if (frequenceReelle > 0.1) {
+            eta = 0x0237; // Operation Enabled (Moteur tourne)
+        } else {
+            eta = 0x0240; // Ready to Switch On
+        }
+
+        document.getElementById("valeur-cmd").innerText = "0x" + cmd.toString(16).padStart(4, '0').toUpperCase();
+        document.getElementById("valeur-eta").innerText = "0x" + eta.toString(16).padStart(4, '0').toUpperCase();
+
+        // Mise à jour des LEDs logiques de bits ETA
+        let b0 = (eta & 0x0001) > 0;
+        let b1 = (eta & 0x0002) > 0;
+        let b2 = (eta & 0x0004) > 0;
+        let b3 = (eta & 0x0008) > 0;
+
+        majBitUI("bit-eta-0", b0);
+        majBitUI("bit-eta-1", b1);
+        majBitUI("bit-eta-2", b2);
+        majBitUI("bit-eta-3", b3);
+    }
+
+    function majBitUI(id, actif) {
+        const el = document.getElementById(id);
+        el.className = actif ? "bit-on" : "bit-off";
+        el.innerText = actif ? "1 (OUI)" : "0 (NON)";
+    }
+
     function dessinerOscilloscope() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = "#222"; ctx.lineWidth = 1; ctx.beginPath();
+        ctx.moveTo(0, canvas.height/2); ctx.lineTo(canvas.width, canvas.height/2); ctx.stroke();
 
-        // Lignes de grille
-        ctx.strokeStyle = "#222"; ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(0, canvas.height/2); ctx.lineTo(canvas.width, canvas.height/2);
-        ctx.stroke();
-
-        // Tracé Fréquence (Cyan)
         ctx.strokeStyle = "#00ffcc"; ctx.lineWidth = 2; ctx.beginPath();
         for (let i = 0; i < histFrq.length; i++) {
             let x = (i / (histFrq.length - 1)) * canvas.width;
@@ -506,7 +561,6 @@
         }
         ctx.stroke();
 
-        // Tracé Courant (Jaune)
         ctx.strokeStyle = "#ffcc00"; ctx.lineWidth = 1.5; ctx.beginPath();
         for (let i = 0; i < histCourant.length; i++) {
             let x = (i / (histCourant.length - 1)) * canvas.width;
@@ -516,7 +570,24 @@
         ctx.stroke();
     }
 
-    // 5. Gestion des TP et Exportation Word
+    function initialiserAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            oscMLI = audioCtx.createOscillator(); gainMLI = audioCtx.createGain();
+            oscMLI.type = 'sawtooth'; oscMLI.frequency.value = 100; gainMLI.gain.value = 0;
+            oscMLI.connect(gainMLI); gainMLI.connect(audioCtx.destination); oscMLI.start();
+        }
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function basculerAudio() {
+        audioAutorise = !audioAutorise;
+        const btn = document.getElementById("btn-audio");
+        if (audioAutorise) { initialiserAudio(); btn.className = "btn-audio actif"; btn.innerText = "🔊 Son MLI Actif"; }
+        else { if (gainMLI) gainMLI.gain.value = 0; btn.className = "btn-audio"; btn.innerText = "🔇 Activer Son MLI Moteur"; }
+    }
+
+    // 5. Gestion des TP & Exportation
     function changerTP() {
         const cle = document.getElementById("select-tp").value;
         const tp = banquesTP[cle];
