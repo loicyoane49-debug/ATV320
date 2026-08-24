@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Simulateur Procédural ATV320 - Moteur & Audio Réalistes</title>
+    <title>Simulateur Procédural ATV320 - Version Pro V2</title>
+    <!-- Librairie pour l'exportation automatique du bilan de TP en PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         body {
             background-color: #1e1e24;
@@ -19,10 +21,10 @@
             box-sizing: border-box;
         }
 
-        .plateforme { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 1250px; width: 100%; }
+        .plateforme { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 1300px; width: 100%; }
 
         /* VARIATEUR */
-        .variateur { background-color: #2b2b2b; padding: 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); width: 310px; border: 2px solid #444; }
+        .variateur { background-color: #2b2b2b; padding: 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); width: 320px; border: 2px solid #444; }
         .ecran {
             background-color: #1a0000; color: #ff2a2a; font-family: 'Courier New', Courier, monospace;
             font-size: 38px; font-weight: bold; text-align: right; padding: 15px; border-radius: 6px;
@@ -41,12 +43,23 @@
         .molette { grid-column: span 2; display: flex; justify-content: space-between; }
         .molette button { width: 48%; }
 
+        /* BORNIER & CONTRÔLES ANALOGIQUES */
         .bornier { margin-top: 15px; background: #202020; padding: 12px; border-radius: 8px; border: 1px solid #3a3a3a; }
         .bornier-title { font-size: 12px; color: #aaa; margin-bottom: 8px; text-align: center; }
         .interrupteurs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .switch-container { text-align: center; font-size: 11px; background: #181818; padding: 6px; border-radius: 4px; }
         .switch-btn { background: #555; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin-top: 4px; font-weight: bold; width: 100%; }
         .switch-btn.active { background: #007bff; }
+        
+        .potentiometre-box { margin-top: 10px; background: #181818; padding: 8px; border-radius: 4px; text-align: center; font-size: 11px; }
+        .slider-ai1 { width: 100%; margin-top: 5px; accent-color: #00ffcc; cursor: pointer; }
+
+        /* INJECTION DE PANNES (MODE FORMATEUR) */
+        .panneau-pannes { margin-top: 15px; background: #2a1517; padding: 10px; border-radius: 8px; border: 1px solid #721c24; }
+        .pannes-title { font-size: 11px; color: #ff6b6b; font-weight: bold; margin-bottom: 6px; text-align: center; }
+        .grid-pannes { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
+        .btn-panne { background: #4a1c1d; color: #ff9999; border: 1px solid #842029; font-size: 10px; padding: 6px 2px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-panne:hover { background: #842029; color: #fff; }
 
         /* MOTEUR & DIAGNOSTIC */
         .panneau-moteur { background-color: #2b2b2b; padding: 20px; border-radius: 12px; width: 310px; border: 2px solid #444; display: flex; flex-direction: column; align-items: center; gap: 12px; }
@@ -67,7 +80,7 @@
         .check-nok { color: #ff4444; }
 
         /* PANNEAU DROITE */
-        .panneau-droite { display: flex; flex-direction: column; gap: 15px; width: 380px; }
+        .panneau-droite { display: flex; flex-direction: column; gap: 15px; width: 390px; }
         .carte { background: #2b2b2b; padding: 15px; border-radius: 12px; border: 2px solid #444; }
         .carte h3 { margin-top: 0; font-size: 15px; color: #00ffcc; border-bottom: 1px solid #444; padding-bottom: 8px; }
         
@@ -75,12 +88,16 @@
         .registre-box { background: #111; padding: 8px; border-radius: 6px; border: 1px solid #333; text-align: center; }
         .registre-valeur { font-family: monospace; font-size: 16px; color: #ffcc00; font-weight: bold; }
 
+        /* TERMINAL MODBUS RTU */
+        .terminal-modbus { background: #050505; border: 1px solid #333; border-radius: 6px; height: 75px; padding: 6px; font-family: monospace; font-size: 10px; color: #00ff66; overflow-y: auto; text-align: left; box-sizing: border-box; }
+
         .champs-etudiant { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
         .input-etudiant { background: #111; border: 1px solid #555; color: white; padding: 8px; border-radius: 4px; width: 100%; box-sizing: border-box; font-size: 12px; }
         .select-tp { width: 100%; background: #111; color: #00ffcc; border: 1px solid #555; padding: 8px; border-radius: 4px; font-weight: bold; margin-bottom: 10px; }
         .consigne-box { background: #1a1a1a; padding: 10px; border-radius: 6px; font-size: 12px; margin-bottom: 10px; line-height: 1.4; }
         .btn-eval { background: #28a745; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .btn-doc { background: #17a2b8; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-pdf { background: #fd7e14; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 8px; display: none; }
+        .btn-doc { background: #17a2b8; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 8px; }
         .resultat-eval { margin-top: 10px; font-size: 12px; padding: 8px; border-radius: 4px; display: none; }
 
         /* MODALE DOCUMENTATION TECHNIQUE */
@@ -103,7 +120,7 @@
 </head>
 <body>
 
-<h2 style="margin-bottom: 20px; text-align: center;">Simulateur Procédural ATV320</h2>
+<h2 style="margin-bottom: 20px; text-align: center;">Simulateur Procédural ATV320 - Version Pro V2</h2>
 
 <div class="plateforme">
 
@@ -129,6 +146,22 @@
                 <div class="switch-container"><div>DI2 (REV)</div><button class="switch-btn" id="sw-di2" onclick="basculerDI(2)">OFF</button></div>
                 <div class="switch-container"><div>DI3 (PS2)</div><button class="switch-btn" id="sw-di3" onclick="basculerDI(3)">OFF</button></div>
                 <div class="switch-container"><div>DI4 (PS4)</div><button class="switch-btn" id="sw-di4" onclick="basculerDI(4)">OFF</button></div>
+            </div>
+
+            <!-- POTENTIOMÈTRE ANALOGIQUE AI1 -->
+            <div class="potentiometre-box">
+                <div>Potentiomètre AI1 : <strong id="val-ai1" style="color: #00ffcc;">5.0 V</strong></div>
+                <input type="range" min="0" max="10" step="0.1" value="5" class="slider-ai1" id="slider-ai1" oninput="ajusterAI1(this.value)">
+            </div>
+        </div>
+
+        <!-- INJECTION DE PANNES (MODE FORMATEUR) -->
+        <div class="panneau-pannes">
+            <div class="pannes-title">⚠️ Injection de Pannes (Formateur)</div>
+            <div class="grid-pannes">
+                <button class="btn-panne" onclick="injecterPanne('OPF1')">OPF1 (Phase)</button>
+                <button class="btn-panne" onclick="injecterPanne('OHF')">OHF (Chauffe)</button>
+                <button class="btn-panne" onclick="injecterPanne('ObF')">ObF (Frein)</button>
             </div>
         </div>
     </div>
@@ -175,10 +208,14 @@
                 <div class="registre-box"><span style="font-size: 10px; color: #888;">CMD (8501)</span><div class="registre-valeur" id="valeur-cmd">0x0000</div></div>
                 <div class="registre-box"><span style="font-size: 10px; color: #888;">ETA (3201)</span><div class="registre-valeur" id="valeur-eta">0x0240</div></div>
             </div>
+            <!-- CONSOLE TRAMES MODBUS RTU -->
+            <div class="terminal-modbus" id="console-modbus">
+                [SYSTEM] Moniteur Bus RS485 Prêt.<br>
+            </div>
         </div>
 
         <div class="carte">
-            <h3>Évaluation Procédurale TP</h3>
+            <h3>Évaluation Procédural TP</h3>
             <div class="champs-etudiant">
                 <input type="text" id="nom-etudiant" class="input-etudiant" placeholder="Nom">
                 <input type="text" id="prenom-etudiant" class="input-etudiant" placeholder="Prénom">
@@ -200,6 +237,7 @@
             <div class="consigne-box" id="consigne-tp"></div>
 
             <button class="btn-eval" onclick="evaluerTP()">Valider la Procédure</button>
+            <button class="btn-pdf" id="btn-pdf" onclick="exporterPDF()">📥 Télécharger Bilan TP (PDF)</button>
             <button class="btn-doc" onclick="ouvrirDoc()">📄 Documentation Technique ATV320</button>
             <div id="resultat-tp" class="resultat-eval"></div>
         </div>
@@ -207,7 +245,7 @@
 
 </div>
 
-<!-- FENÊTRE MODALE VISUELLE DU DOCUMENT TECHNIQUE (Solution 1) -->
+<!-- FENÊTRE MODALE VISUELLE DU DOCUMENT TECHNIQUE -->
 <div id="modal-doc" class="modal-doc">
     <div class="modal-contenu">
         <div class="modal-entete">
@@ -222,8 +260,13 @@
 </div>
 
 <script>
-    // 1. Structure de menus complète du variateur ATV320
-    const menuATV320 = {
+    // 1. Structure de menus complète du variateur ATV320 (Inclus FCS et rSt)
+    const valeursUsineDefaut = {
+        bFr: 50.0, UnS: 0.0, nCr: 0.0, FrS: 50.0, nSP: 1440, tUn: "nO", FCS: "nO",
+        Cd1: "tEr", Fr1: "PSS", ACC: 3.0, dEC: 3.0, LSP: 0.0, HSP: 50.0, SP2: 15.0, SP3: 30.0, rSt: "nO"
+    };
+
+    let menuATV320 = {
         id: "ROOT", type: "menu", enfants: [
             { id: "COnF", type: "menu", enfants: [
                 { id: "FULL", type: "menu", enfants: [
@@ -233,7 +276,8 @@
                         { id: "nCr", type: "param", valeur: 0.0, pas: 0.1, paramKey: "nCr" },
                         { id: "FrS", type: "param", valeur: 50.0, pas: 1.0, paramKey: "FrS" },
                         { id: "nSP", type: "param", valeur: 1440, pas: 10, paramKey: "nSP" },
-                        { id: "tUn", type: "enum", options: ["nO", "YES", "dOn"], indexOpt: 0, paramKey: "tUn" }
+                        { id: "tUn", type: "enum", options: ["nO", "YES", "dOn"], indexOpt: 0, paramKey: "tUn" },
+                        { id: "FCS", type: "enum", options: ["nO", "InI"], indexOpt: 0, paramKey: "FCS" }
                     ]},
                     { id: "CtL-", type: "menu", enfants: [
                         { id: "Cd1", type: "enum", options: ["tEr", "HMI", "Mdb"], indexOpt: 0, paramKey: "Cd1" },
@@ -248,6 +292,9 @@
                             { id: "SP2", type: "param", valeur: 15.0, pas: 1.0, paramKey: "SP2" },
                             { id: "SP3", type: "param", valeur: 30.0, pas: 1.0, paramKey: "SP3" }
                         ]}
+                    ]},
+                    { id: "FLt-", type: "menu", enfants: [
+                        { id: "rSt", type: "enum", options: ["nO", "YES"], indexOpt: 0, paramKey: "rSt" }
                     ]}
                 ]}
             ]}
@@ -255,56 +302,16 @@
     };
 
     const banquesTP = {
-        tp1: { 
-            titre: "TP 1 : Vérification des paramètres d'usine", 
-            consignes: "1. Vérifier que la fréquence standard est <strong>bFr = 50.0 Hz</strong>.<br>2. Vérifier que la fréquence maximale est <strong>HSP = 50.0 Hz</strong> dans FUn-.", 
-            attentes: { bFr: 50.0, HSP: 50.0 } 
-        },
-        tp2: { 
-            titre: "TP 2 : Plaque Signalétique Moteur (drC-)", 
-            consignes: "Saisir les caractéristiques nominales du moteur :<br>- Tension <strong>UnS = 400.0 V</strong><br>- Courant <strong>nCr = 4.2 A</strong><br>- Vitesse nominale <strong>nSP = 1440 RPM</strong>", 
-            attentes: { UnS: 400.0, nCr: 4.2, nSP: 1440 } 
-        },
-        tp3: { 
-            titre: "TP 3 : Auto-réglage du Moteur (tUn)", 
-            consignes: "1. Configurer la plaque moteur (UnS = 400.0 V, nCr = 4.2 A).<br>2. Lancer l'auto-tuning en passant <strong>tUn = YES</strong> (attendre la validation <strong>dOn</strong>).", 
-            attentes: { UnS: 400.0, nCr: 4.2, tUn: "dOn" } 
-        },
-        tp4: { 
-            titre: "TP 4 : Ajustement des Rampes (ACC / dEC)", 
-            consignes: "Accéder au menu FUn- et adapter la dynamique de démarrage :<br>- Temps d'accélération : <strong>ACC = 5.0 s</strong><br>- Temps de décélération : <strong>dEC = 8.0 s</strong>", 
-            attentes: { ACC: 5.0, dEC: 8.0 } 
-        },
-        tp5: { 
-            titre: "TP 5 : Encadrement Fréquence (LSP / HSP)", 
-            consignes: "Limiter la plage de fonctionnement pour la sécurité du procédé :<br>- Petite vitesse : <strong>LSP = 10.0 Hz</strong><br>- Grande vitesse : <strong>HSP = 45.0 Hz</strong>", 
-            attentes: { LSP: 10.0, HSP: 45.0 } 
-        },
-        tp6: { 
-            titre: "TP 6 : Sélection du Canal de Commande (Cd1)", 
-            consignes: "Basculer la commande du variateur depuis le bornier physique vers l'IHM façade :<br>Modifier <strong>Cd1 = HMI</strong> (Menu CtL-).", 
-            attentes: { Cd1: "HMI" } 
-        },
-        tp7: { 
-            titre: "TP 7 : Vitesse Présélectionnée SP2", 
-            consignes: "Dans FUn- > PSS- :<br>1. Régler la deuxième vitesse <strong>SP2 = 20.0 Hz</strong>.<br>2. Activer l'entrée <strong>DI3</strong> pour vérifier l'ordre de vitesse.", 
-            attentes: { SP2: 20.0 } 
-        },
-        tp8: { 
-            titre: "TP 8 : Combinatoire SP2 & SP3 (DI3/DI4)", 
-            consignes: "Dans FUn- > PSS- :<br>1. Configurer <strong>SP2 = 15.0 Hz</strong>.<br>2. Configurer <strong>SP3 = 30.0 Hz</strong>.<br>3. Vérifier les états logiques DI3 seul, DI4 seul et DI3+DI4.", 
-            attentes: { SP2: 15.0, SP3: 30.0 } 
-        },
-        tp9: { 
-            titre: "TP 9 : Profil Dynamique et Rampes Rapides", 
-            consignes: "Ajuster le variateur pour un convoyeur rapide :<br>- Rampes : <strong>ACC = 1.5 s</strong>, <strong>dEC = 2.0 s</strong><br>- Plage : <strong>LSP = 12.0 Hz</strong>, <strong>HSP = 50.0 Hz</strong>", 
-            attentes: { ACC: 1.5, dEC: 2.0, LSP: 12.0, HSP: 50.0 } 
-        },
-        tp10: { 
-            titre: "TP 10 : Mise en Service Industrielle Globale", 
-            consignes: "Réaliser la mise en service complète de l'installation :<br>1. Plaque moteur : <strong>UnS = 400.0 V</strong>, <strong>nCr = 4.2 A</strong><br>2. Auto-tuning : <strong>tUn = dOn</strong><br>3. Rampes : <strong>ACC = 4.0 s</strong>, <strong>dEC = 4.0 s</strong><br>4. Seuil mini : <strong>LSP = 5.0 Hz</strong>, <strong>SP2 = 25.0 Hz</strong><br>5. Commande : <strong>Cd1 = tEr</strong>", 
-            attentes: { UnS: 400.0, nCr: 4.2, tUn: "dOn", ACC: 4.0, dEC: 4.0, LSP: 5.0, SP2: 25.0, Cd1: "tEr" } 
-        }
+        tp1: { titre: "TP 1 : Vérification des paramètres d'usine", consignes: "1. Vérifier que la fréquence standard est <strong>bFr = 50.0 Hz</strong>.<br>2. Vérifier que la fréquence maximale est <strong>HSP = 50.0 Hz</strong> dans FUn-.", attentes: { bFr: 50.0, HSP: 50.0 } },
+        tp2: { titre: "TP 2 : Plaque Signalétique Moteur (drC-)", consignes: "Saisir les caractéristiques nominales du moteur :<br>- Tension <strong>UnS = 400.0 V</strong><br>- Courant <strong>nCr = 4.2 A</strong><br>- Vitesse nominale <strong>nSP = 1440 RPM</strong>", attentes: { UnS: 400.0, nCr: 4.2, nSP: 1440 } },
+        tp3: { titre: "TP 3 : Auto-réglage du Moteur (tUn)", consignes: "1. Configurer la plaque moteur (UnS = 400.0 V, nCr = 4.2 A).<br>2. Lancer l'auto-tuning en passant <strong>tUn = YES</strong> (attendre la validation <strong>dOn</strong>).", attentes: { UnS: 400.0, nCr: 4.2, tUn: "dOn" } },
+        tp4: { titre: "TP 4 : Ajustement des Rampes (ACC / dEC)", consignes: "Accéder au menu FUn- et adapter la dynamique de démarrage :<br>- Temps d'accélération : <strong>ACC = 5.0 s</strong><br>- Temps de décélération : <strong>dEC = 8.0 s</strong>", attentes: { ACC: 5.0, dEC: 8.0 } },
+        tp5: { titre: "TP 5 : Encadrement Fréquence (LSP / HSP)", consignes: "Limiter la plage de fonctionnement pour la sécurité du procédé :<br>- Petite vitesse : <strong>LSP = 10.0 Hz</strong><br>- Grande vitesse : <strong>HSP = 45.0 Hz</strong>", attentes: { LSP: 10.0, HSP: 45.0 } },
+        tp6: { titre: "TP 6 : Sélection du Canal de Commande (Cd1)", consignes: "Basculer la commande du variateur depuis le bornier physique vers l'IHM façade :<br>Modifier <strong>Cd1 = HMI</strong> (Menu CtL-).", attentes: { Cd1: "HMI" } },
+        tp7: { titre: "TP 7 : Vitesse Présélectionnée SP2", consignes: "Dans FUn- > PSS- :<br>1. Régler la deuxième vitesse <strong>SP2 = 20.0 Hz</strong>.<br>2. Activer l'entrée <strong>DI3</strong> pour vérifier l'ordre de vitesse.", attentes: { SP2: 20.0 } },
+        tp8: { titre: "TP 8 : Combinatoire SP2 & SP3 (DI3/DI4)", consignes: "Dans FUn- > PSS- :<br>1. Configurer <strong>SP2 = 15.0 Hz</strong>.<br>2. Configurer <strong>SP3 = 30.0 Hz</strong>.<br>3. Vérifier les états logiques DI3 seul, DI4 seul et DI3+DI4.", attentes: { SP2: 15.0, SP3: 30.0 } },
+        tp9: { titre: "TP 9 : Profil Dynamique et Rampes Rapides", consignes: "Ajuster le variateur pour un convoyeur rapide :<br>- Rampes : <strong>ACC = 1.5 s</strong>, <strong>dEC = 2.0 s</strong><br>- Plage : <strong>LSP = 12.0 Hz</strong>, <strong>HSP = 50.0 Hz</strong>", attentes: { ACC: 1.5, dEC: 2.0, LSP: 12.0, HSP: 50.0 } },
+        tp10: { titre: "TP 10 : Mise en Service Industrielle Globale", consignes: "Réaliser la mise en service complète de l'installation :<br>1. Plaque moteur : <strong>UnS = 400.0 V</strong>, <strong>nCr = 4.2 A</strong><br>2. Auto-tuning : <strong>tUn = dOn</strong><br>3. Rampes : <strong>ACC = 4.0 s</strong>, <strong>dEC = 4.0 s</strong><br>4. Seuil mini : <strong>LSP = 5.0 Hz</strong>, <strong>SP2 = 25.0 Hz</strong><br>5. Commande : <strong>Cd1 = tEr</strong>", attentes: { UnS: 400.0, nCr: 4.2, tUn: "dOn", ACC: 4.0, dEC: 4.0, LSP: 5.0, SP2: 25.0, Cd1: "tEr" } }
     };
 
     let cheminActuel = [menuATV320];
@@ -316,12 +323,14 @@
     let runHMI = false;
 
     let di1 = false, di2 = false, di3 = false, di4 = false;
+    let tensionAI1 = 5.0;
     let frequenceReelle = 0.0;
     let courantReel = 0.0;
     let angleRotor = 0;
     let sensRotation = 1;
 
     let audioCtx = null, oscIGBT = null, oscStator = null, gainMaster = null, audioAutorise = false;
+    let denierResultatEvaluation = null;
 
     const ecran = document.getElementById("affichage");
     const canvas = document.getElementById("oscilloscope");
@@ -332,9 +341,7 @@
     function obtenirValeurParam(key) {
         let res = null;
         function chercher(n) {
-            if (n.paramKey === key) {
-                res = n.type === "enum" ? n.options[n.indexOpt] : n.valeur;
-            }
+            if (n.paramKey === key) res = n.type === "enum" ? n.options[n.indexOpt] : n.valeur;
             if (n.enfants) n.enfants.forEach(chercher);
         }
         chercher(menuATV320);
@@ -350,6 +357,14 @@
             if (n.enfants) n.enfants.forEach(chercher);
         }
         chercher(menuATV320);
+    }
+
+    // Restauration de la configuration d'usine (FCS)
+    function reinitialiserUsine() {
+        for (let param in valeursUsineDefaut) {
+            fixerValeurParam(param, valeursUsineDefaut[param]);
+        }
+        logModbus("[SYS] Restauration paramètres usine (FCS = InI)");
     }
 
     // 2. Navigation IHM Façade ATV320
@@ -378,7 +393,7 @@
     }
 
     function actionHaut() {
-        if (enValidation || defautActif || !enNavMenu) return;
+        if (enValidation || !enNavMenu) return;
         let noeudActuel = cheminActuel[cheminActuel.length - 1];
         let item = noeudActuel.enfants[indexActuel];
 
@@ -392,7 +407,7 @@
     }
 
     function actionBas() {
-        if (enValidation || defautActif || !enNavMenu) return;
+        if (enValidation || !enNavMenu) return;
         let noeudActuel = cheminActuel[cheminActuel.length - 1];
         let item = noeudActuel.enfants[indexActuel];
 
@@ -406,7 +421,7 @@
     }
 
     function actionEnt() {
-        if (enValidation || defautActif) return;
+        if (enValidation) return;
 
         if (!enNavMenu) {
             enNavMenu = true;
@@ -422,10 +437,9 @@
         if (!selection) return;
 
         if (modeEdition) {
+            // Traitement Auto-tuning (tUn)
             if (selection.paramKey === "tUn" && selection.options[selection.indexOpt] === "YES") {
-                enValidation = true;
-                ecran.innerText = "tUn";
-                ecran.classList.add("clignotement");
+                enValidation = true; ecran.innerText = "tUn"; ecran.classList.add("clignotement");
                 setTimeout(() => {
                     fixerValeurParam("tUn", "dOn");
                     ecran.classList.remove("clignotement");
@@ -435,33 +449,43 @@
                 return;
             }
 
+            // Traitement Factory Reset (FCS)
+            if (selection.paramKey === "FCS" && selection.options[selection.indexOpt] === "InI") {
+                enValidation = true; ecran.innerText = "FCS"; ecran.classList.add("clignotement");
+                setTimeout(() => {
+                    reinitialiserUsine();
+                    ecran.classList.remove("clignotement");
+                    modeEdition = false; enValidation = false;
+                    mettreAjourEcran();
+                }, 1500);
+                return;
+            }
+
+            // Traitement Acquittement Défaut (rSt)
+            if (selection.paramKey === "rSt" && selection.options[selection.indexOpt] === "YES") {
+                defautActif = null;
+                fixerValeurParam("rSt", "nO");
+                logModbus("[FLT] Défaut acquitté par IHM (rSt)");
+            }
+
             enValidation = true; ecran.classList.add("clignotement");
-            setTimeout(() => { ecran.classList.remove("clignotement"); modeEdition = false; enValidation = false; mettreAjourEcran(); }, 800);
+            setTimeout(() => { ecran.classList.remove("clignotement"); modeEdition = false; enValidation = false; mettreAjourEcran(); }, 600);
         } else if (selection && selection.type === "menu" && selection.enfants.length > 0) {
-            cheminActuel.push(selection);
-            indexActuel = 0;
-            mettreAjourEcran();
+            cheminActuel.push(selection); indexActuel = 0; mettreAjourEcran();
         } else if (selection && (selection.type === "param" || selection.type === "enum")) {
-            modeEdition = true;
-            mettreAjourEcran();
+            modeEdition = true; mettreAjourEcran();
         }
     }
 
     function actionEsc() {
         if (enValidation) return;
-
-        if (modeEdition) {
-            modeEdition = false;
-        } else if (cheminActuel.length > 1) {
-            cheminActuel.pop();
-            indexActuel = 0;
-        } else {
-            enNavMenu = false;
-        }
+        if (modeEdition) modeEdition = false;
+        else if (cheminActuel.length > 1) { cheminActuel.pop(); indexActuel = 0; }
+        else enNavMenu = false;
         mettreAjourEcran();
     }
 
-    function actionRunHMI() { if (obtenirValeurParam("Cd1") === "HMI") runHMI = true; }
+    function actionRunHMI() { if (obtenirValeurParam("Cd1") === "HMI" && !defautActif) runHMI = true; }
     function actionStopHMI() { runHMI = false; }
 
     function basculerDI(num) {
@@ -476,6 +500,18 @@
             btn.className = etat ? "switch-btn active" : "switch-btn";
             btn.innerText = etat ? "ON" : "OFF";
         }
+    }
+
+    function ajusterAI1(val) {
+        tensionAI1 = parseFloat(val);
+        document.getElementById("val-ai1").innerText = tensionAI1.toFixed(1) + " V";
+    }
+
+    function injecterPanne(codeDefaut) {
+        defautActif = codeDefaut;
+        runHMI = false;
+        logModbus(`[DEF] PERTURBATION : Code ${codeDefaut}`);
+        mettreAjourEcran();
     }
 
     // 3. Modèle Moteur, Logiciel des Rampes & Auto-contrôle
@@ -504,9 +540,10 @@
         document.getElementById("chk-fr1").innerText = fr1;
 
         let ordreMarche = false;
-        if (drcValide && tunValide) {
+        if (drcValide && tunValide && !defautActif) {
             if (cd1 === "tEr" && (di1 || di2)) ordreMarche = true;
             if (cd1 === "HMI" && runHMI) ordreMarche = true;
+            if (cd1 === "Mdb") ordreMarche = true; // Pilotage via Bus de terrain
         }
 
         let consigneFrq = 0.0;
@@ -518,6 +555,8 @@
                 else if (di4) consigneFrq = sp3;
                 else if (di3) consigneFrq = sp2;
                 else consigneFrq = hsp;
+            } else if (fr1 === "AIV1") {
+                consigneFrq = (tensionAI1 / 10.0) * hsp;
             } else {
                 consigneFrq = hsp;
             }
@@ -544,20 +583,41 @@
         mettreAjourAudioMoteur();
 
         let cmd = ordreMarche ? 0x000F : 0x0000;
-        let eta = frequenceReelle > 0.1 ? 0x0237 : (drcValide && tunValide ? 0x0240 : 0x0208);
+        let eta = defautActif ? 0x0008 : (frequenceReelle > 0.1 ? 0x0237 : (drcValide && tunValide ? 0x0240 : 0x0208));
         document.getElementById("valeur-cmd").innerText = "0x" + cmd.toString(16).padStart(4, '0').toUpperCase();
         document.getElementById("valeur-eta").innerText = "0x" + eta.toString(16).padStart(4, '0').toUpperCase();
+
+        générerTramesModbusSimulées(cmd, eta);
 
         histFrq.push(frequenceReelle); histFrq.shift();
         histCourant.push(courantReel); histCourant.shift();
         dessinerOscilloscope();
 
-        if (!enNavMenu && !defautActif) mettreAjourEcran();
+        if (!enNavMenu) mettreAjourEcran();
 
         setTimeout(boucleMoteur, 50);
     }
 
-    // 4. Moteur Audio MLI (Découpage IGBT)
+    // 4. Console & Moniteur Modbus RTU
+    function logModbus(msg) {
+        const consoleEl = document.getElementById("console-modbus");
+        consoleEl.innerHTML += msg + "<br>";
+        consoleEl.scrollTop = consoleEl.scrollHeight;
+    }
+
+    let compteurTrame = 0;
+    function générerTramesModbusSimulées(cmd, eta) {
+        compteurTrame++;
+        if (compteurTrame % 40 === 0) { // Génération périodique de trames
+            let hexFrq = Math.round(frequenceReelle * 10).toString(16).padStart(4, '0').toUpperCase();
+            logModbus(`[Tx] 01 03 21 35 00 01 [ETA:${eta.toString(16).toUpperCase()}]`);
+            if (obtenirValeurParam("Cd1") === "Mdb") {
+                logModbus(`[Rx] 01 06 21 35 ${hexFrq} [RFrD]`);
+            }
+        }
+    }
+
+    // 5. Moteur Audio MLI (Découpage IGBT)
     function initialiserAudio() {
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -602,7 +662,7 @@
         else { if (gainMaster) gainMaster.gain.value = 0; btn.className = "btn-audio"; btn.innerText = "🔇 Activer Acoustic MLI Moteur"; }
     }
 
-    // 5. Visualisation Oscilloscope
+    // 6. Visualisation Oscilloscope
     function dessinerOscilloscope() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
@@ -623,13 +683,14 @@
         ctx.stroke();
     }
 
-    // 6. Gestion TP & Évaluation Dynamique
+    // 7. Gestion TP, Évaluation & Génération Rapport PDF
     function changerTP() {
         const selectedKey = document.getElementById("select-tp").value;
         const tp = banquesTP[selectedKey];
         if (tp) {
             document.getElementById("consigne-tp").innerHTML = `<strong>${tp.titre}</strong><br>${tp.consignes}`;
             document.getElementById("resultat-tp").style.display = "none";
+            document.getElementById("btn-pdf").style.display = "none";
         }
     }
 
@@ -652,20 +713,62 @@
         }
 
         const note = Math.round((points / total) * 20);
+        denierResultatEvaluation = { nom, prenom, tpTitre: tp.titre, note, details };
+
         const box = document.getElementById("resultat-tp");
         box.style.display = "block";
         box.style.background = note >= 10 ? "#1e4620" : "#5c1d24";
         box.innerHTML = `<strong>${prenom} ${nom} - Note : ${note} / 20</strong><br>` + details.join("<br>");
+
+        document.getElementById("btn-pdf").style.display = "block";
     }
 
-    // 7. Navigation Modal Documentation Technique
-    function ouvrirDoc() {
-        document.getElementById("modal-doc").style.display = "flex";
+    function exporterPDF() {
+        if (!denierResultatEvaluation) return;
+
+        const dateStr = new Date().toLocaleString("fr-FR");
+        const element = document.createElement("div");
+        element.style.padding = "30px";
+        element.style.fontFamily = "Arial, sans-serif";
+        element.style.color = "#111";
+
+        element.innerHTML = `
+            <div style="text-align: center; border-bottom: 2px solid #00aa66; padding-bottom: 10px; margin-bottom: 20px;">
+                <h1 style="color: #00aa66; margin: 0;">Rapport d'Évaluation TP - ATV320</h1>
+                <p style="margin: 5px 0; color: #666;">Simulateur d'Entraînement Procédural Automatique</p>
+            </div>
+            
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                <tr><td><strong>Nom :</strong> ${denierResultatEvaluation.nom}</td><td><strong>Date :</strong> ${dateStr}</td></tr>
+                <tr><td><strong>Prénom :</strong> ${denierResultatEvaluation.prenom}</td><td><strong>Note Finale :</strong> <span style="font-size: 18px; font-weight: bold; color: ${denierResultatEvaluation.note >= 10 ? 'green' : 'red'};">${denierResultatEvaluation.note} / 20</span></td></tr>
+            </table>
+
+            <h3 style="background: #f0f0f0; padding: 8px; border-left: 4px solid #00aa66;">${denierResultatEvaluation.tpTitre}</h3>
+            
+            <div style="margin-top: 15px; line-height: 1.8;">
+                <h4>Résultats des Vérifications de Paramètres :</h4>
+                ${denierResultatEvaluation.details.map(d => `<p style="margin: 4px 0;">${d}</p>`).join("")}
+            </div>
+
+            <div style="margin-top: 40px; border-top: 1px solid #ccc; pt: 10px; font-size: 11px; text-align: center; color: #888;">
+                Attestation générée automatiquement par le Simulateur ATV320
+            </div>
+        `;
+
+        const opt = {
+            margin: 10,
+            filename: `Bilan_TP_${denierResultatEvaluation.nom}_${denierResultatEvaluation.prenom}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(element).save();
     }
 
-    function fermerDoc() {
-        document.getElementById("modal-doc").style.display = "none";
-    }
+    // 8. Navigation Modal Documentation Technique
+    function ouvrirDoc() { document.getElementById("modal-doc").style.display = "flex"; }
+    function fermerDoc() { document.getElementById("modal-doc").style.display = "none"; }
 
     document.addEventListener('DOMContentLoaded', () => {
         changerTP();
